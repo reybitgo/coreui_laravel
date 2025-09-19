@@ -6,8 +6,36 @@
 
 // Function to calculate base directory based on current file location
 function getBaseDir() {
-    // Since all template files are now in /coreui-template/ directory,
-    // and assets are relative to this directory, always return current directory
+    $currentPath = $_SERVER['SCRIPT_NAME'];
+
+    // Extract the path within the coreui-template directory
+    // Remove everything before /coreui-template/
+    $templatePos = strpos($currentPath, '/coreui-template/');
+    if ($templatePos !== false) {
+        // Get the path relative to coreui-template directory
+        $relativePath = substr($currentPath, $templatePos + strlen('/coreui-template/'));
+
+        // Count directory separators to determine depth
+        $pathParts = explode('/', trim($relativePath, '/'));
+        // Remove the filename (last element) to get directory depth
+        array_pop($pathParts);
+
+        // Filter out empty parts
+        $pathParts = array_filter($pathParts, function($part) {
+            return !empty($part);
+        });
+        $depth = count($pathParts);
+
+        // For root level files (like index.php), depth should be 0, so return current directory
+        if ($depth <= 0) {
+            return './';
+        }
+
+        // For subdirectory files, return appropriate number of ../
+        return str_repeat('../', $depth);
+    }
+
+    // Fallback to current directory
     return './';
 }
 
