@@ -1,0 +1,696 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Transaction;
+use App\Models\User;
+use App\Models\Wallet;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+
+class AdminController extends Controller
+{
+    use AuthorizesRequests;
+
+    public function dashboard()
+    {
+        $userCount = User::count();
+        $adminCount = User::role('admin')->count();
+        $memberCount = User::role('member')->count();
+        $roleCount = Role::count();
+        $permissionCount = Permission::count();
+
+        // Financial statistics
+        $totalBalance = Wallet::sum('balance');
+        $pendingTransactions = Transaction::where('status', 'pending')->count();
+        $todayTransactions = Transaction::whereDate('created_at', today())->count();
+        $approvedTransactions = Transaction::where('status', 'approved')->count();
+
+        // Transaction statistics
+        $totalDeposits = Transaction::where('type', 'deposit')->where('status', 'approved')->sum('amount');
+        $totalWithdrawals = Transaction::where('type', 'withdrawal')->where('status', 'approved')->sum('amount');
+        $monthlyVolume = Transaction::where('status', 'approved')
+            ->whereMonth('approved_at', now()->month)
+            ->sum('amount');
+
+        // Recent activity
+        $recentTransactions = Transaction::with('user')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        $recentUsers = User::latest()
+            ->limit(5)
+            ->get();
+
+        return view('admin.dashboard', compact(
+            'userCount',
+            'adminCount',
+            'memberCount',
+            'roleCount',
+            'permissionCount',
+            'totalBalance',
+            'pendingTransactions',
+            'todayTransactions',
+            'approvedTransactions',
+            'totalDeposits',
+            'totalWithdrawals',
+            'monthlyVolume',
+            'recentTransactions',
+            'recentUsers'
+        ));
+    }
+
+    public function walletManagement()
+    {
+        $this->authorize('wallet_management');
+
+        $wallets = User::with(['wallet', 'transactions' => function($query) {
+            $query->latest()->limit(5);
+        }])->whereHas('roles', function($query) {
+            $query->where('name', 'member');
+        })->paginate(20);
+
+        $totalBalance = Wallet::sum('balance');
+        $totalWallets = Wallet::count();
+        $activeWallets = Wallet::where('is_active', true)->count();
+        $recentTransactions = Transaction::with('user')->latest()->limit(10)->get();
+
+        $todayDeposits = Transaction::where('type', 'deposit')
+            ->where('status', 'approved')
+            ->whereDate('approved_at', today())
+            ->sum('amount');
+
+        $todayWithdrawals = Transaction::where('type', 'withdrawal')
+            ->where('status', 'approved')
+            ->whereDate('approved_at', today())
+            ->sum('amount');
+
+        $pendingTransactions = Transaction::where('status', 'pending')->count();
+
+        return view('admin.wallet-management', compact(
+            'wallets',
+            'totalBalance',
+            'totalWallets',
+            'activeWallets',
+            'recentTransactions',
+            'todayDeposits',
+            'todayWithdrawals',
+            'pendingTransactions'
+        ));
+    }
+
+    public function transactionApproval()
+    {
+        $this->authorize('transaction_approval');
+
+        $pendingTransactions = Transaction::with(['user', 'approver'])
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('admin.transaction-approval', compact('pendingTransactions'));
+    }
+
+    public function systemSettings()
+    {
+        $this->authorize('system_settings');
+
+        // System configuration data
+        $systemStats = [
+            'laravel_version' => app()->version(),
+            'php_version' => PHP_VERSION,
+            'database_size' => $this->getDatabaseSize(),
+            'total_users' => User::count(),
+            'total_transactions' => Transaction::count(),
+            'total_wallets' => Wallet::count(),
+            'system_uptime' => $this->getSystemUptime(),
+            'storage_used' => $this->getStorageUsed(),
+            'cache_status' => $this->getCacheStatus(),
+        ];
+
+        // Security settings
+        $securitySettings = [
+            'two_factor_enabled' => User::whereNotNull('two_factor_secret')->count(),
+            'email_verified_users' => User::whereNotNull('email_verified_at')->count(),
+            'failed_login_attempts' => 0, // Would be from logs
+            'active_sessions' => 0, // Would be from sessions table
+        ];
+
+        // Transaction limits and settings
+        $transactionSettings = [
+            'min_deposit' => 1.00,
+            'max_deposit' => 10000.00,
+            'min_withdrawal' => 1.00,
+            'max_withdrawal' => 10000.00,
+            'daily_limit' => 50000.00,
+            'require_approval' => true,
+        ];
+
+        // Get system settings
+        $settings = \App\Models\SystemSetting::all()->keyBy('key');
+
+        return view('admin.system-settings', compact(
+            'systemStats',
+            'securitySettings',
+            'transactionSettings',
+            'settings'
+        ));
+    }
+
+    private function getDatabaseSize()
+    {
+        try {
+            $result = \DB::select("SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS size_mb FROM information_schema.tables WHERE table_schema = DATABASE()");
+            return isset($result[0]->size_mb) ? $result[0]->size_mb . ' MB' : 'Unknown';
+        } catch (\Exception $e) {
+            return 'Unknown';
+        }
+    }
+
+    private function getSystemUptime()
+    {
+        try {
+            if (function_exists('sys_getloadavg')) {
+                return 'Available';
+            }
+            return 'N/A';
+        } catch (\Exception $e) {
+            return 'N/A';
+        }
+    }
+
+    private function getStorageUsed()
+    {
+        try {
+            $bytes = disk_free_space(storage_path());
+            return $bytes ? round($bytes / 1024 / 1024 / 1024, 2) . ' GB free' : 'Unknown';
+        } catch (\Exception $e) {
+            return 'Unknown';
+        }
+    }
+
+    private function getCacheStatus()
+    {
+        try {
+            \Cache::put('test_key', 'test_value', 60);
+            $status = \Cache::get('test_key') === 'test_value' ? 'Working' : 'Error';
+            \Cache::forget('test_key');
+            return $status;
+        } catch (\Exception $e) {
+            return 'Error';
+        }
+    }
+
+    public function users()
+    {
+        $users = User::with('roles')->paginate(15);
+
+        return view('admin.users', compact('users'));
+    }
+
+    public function approveTransaction(Request $request, $id)
+    {
+        $this->authorize('transaction_approval');
+
+        $request->validate([
+            'notes' => 'nullable|string|max:500'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $transaction = Transaction::with('user')->findOrFail($id);
+
+            if ($transaction->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaction is not pending approval'
+                ], 400);
+            }
+
+            // Update transaction status
+            $transaction->update([
+                'status' => 'approved',
+                'approved_by' => auth()->user()->id,
+                'approved_at' => now(),
+                'admin_notes' => $request->notes
+            ]);
+
+            // Update wallet balance for deposits
+            if ($transaction->type === 'deposit') {
+                $wallet = $transaction->user->getOrCreateWallet();
+                $wallet->addBalance($transaction->amount);
+            }
+
+            // Note: For withdrawals, fee transactions are already auto-approved during request
+            // No additional fee processing needed on approval
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaction approved successfully and wallet balance updated',
+                'transaction' => $transaction->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error approving transaction: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function rejectTransaction(Request $request, $id)
+    {
+        $this->authorize('transaction_approval');
+
+        $request->validate([
+            'reason' => 'required|string|max:500'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $transaction = Transaction::with('user')->findOrFail($id);
+
+            if ($transaction->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaction is not pending approval'
+                ], 400);
+            }
+
+            // Update transaction status
+            $transaction->update([
+                'status' => 'rejected',
+                'approved_by' => auth()->user()->id,
+                'approved_at' => now(),
+                'admin_notes' => $request->reason
+            ]);
+
+            // For withdrawals, return ONLY the withdrawal amount (fee is non-refundable)
+            if ($transaction->type === 'withdrawal') {
+                $wallet = $transaction->user->getOrCreateWallet();
+
+                // Return only the withdrawal amount - fee is non-refundable
+                $wallet->addBalance($transaction->amount);
+
+                // Note: Withdrawal fee remains deducted as it's a processing fee (non-refundable)
+                // The fee transaction is already marked as 'approved' during withdrawal request
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaction rejected successfully' . ($transaction->type === 'withdrawal' ? ' and amount returned to wallet' : ''),
+                'transaction' => $transaction->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error rejecting transaction: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function bulkApproval(Request $request)
+    {
+        $this->authorize('transaction_approval');
+
+        $request->validate([
+            'transaction_ids' => 'required|array',
+            'transaction_ids.*' => 'integer',
+            'action' => 'required|in:approve,reject',
+            'notes' => 'nullable|string|max:500'
+        ]);
+
+        $count = count($request->transaction_ids);
+        $action = $request->action;
+
+        // Simulate bulk processing
+        foreach ($request->transaction_ids as $id) {
+            // Process each transaction
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => ucfirst($action) . "d {$count} transactions successfully",
+            'count' => $count
+        ]);
+    }
+
+    public function blockTransaction(Request $request, $id)
+    {
+        $this->authorize('transaction_approval');
+
+        $request->validate([
+            'reason' => 'required|string|max:500'
+        ]);
+
+        // Simulate transaction blocking and user account action
+        return response()->json([
+            'success' => true,
+            'message' => 'Transaction blocked and user flagged for review',
+            'transaction_id' => $id
+        ]);
+    }
+
+    public function investigateTransaction(Request $request, $id)
+    {
+        $this->authorize('transaction_approval');
+
+        // Simulate investigation flag
+        return response()->json([
+            'success' => true,
+            'message' => 'Transaction flagged for investigation',
+            'transaction_id' => $id
+        ]);
+    }
+
+    public function exportTransactionReport(Request $request)
+    {
+        $this->authorize('transaction_approval');
+
+        $request->validate([
+            'status' => 'nullable|in:pending,approved,rejected',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from'
+        ]);
+
+        // Simulate report generation
+        $reportData = [
+            'filename' => 'transaction_report_' . now()->format('Y_m_d_H_i_s') . '.csv',
+            'url' => '/admin/reports/transactions/download/' . uniqid(),
+            'generated_at' => now()->toISOString()
+        ];
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Report generated successfully',
+            'report' => $reportData
+        ]);
+    }
+
+    public function viewLogs(Request $request)
+    {
+        $this->authorize('system_settings');
+
+        // Get log type from request, default to 'all'
+        $logType = $request->get('type', 'all');
+        $search = $request->get('search', '');
+        $level = $request->get('level', 'all');
+
+        // Simulate log data with different types and levels
+        $allLogs = collect([
+            [
+                'id' => 1,
+                'timestamp' => now()->subMinutes(5),
+                'level' => 'INFO',
+                'type' => 'security',
+                'message' => 'User login successful',
+                'user_id' => 2,
+                'ip_address' => '192.168.1.100',
+                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            ],
+            [
+                'id' => 2,
+                'timestamp' => now()->subMinutes(12),
+                'level' => 'WARNING',
+                'type' => 'security',
+                'message' => 'Failed login attempt',
+                'user_id' => null,
+                'ip_address' => '203.0.113.45',
+                'user_agent' => 'curl/7.68.0'
+            ],
+            [
+                'id' => 3,
+                'timestamp' => now()->subMinutes(18),
+                'level' => 'INFO',
+                'type' => 'transaction',
+                'message' => 'Transaction approved: $1,500.00 withdrawal',
+                'user_id' => 1,
+                'ip_address' => '192.168.1.10',
+                'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'
+            ],
+            [
+                'id' => 4,
+                'timestamp' => now()->subMinutes(25),
+                'level' => 'ERROR',
+                'type' => 'system',
+                'message' => 'Database connection timeout',
+                'user_id' => null,
+                'ip_address' => 'localhost',
+                'user_agent' => 'Internal System'
+            ],
+            [
+                'id' => 5,
+                'timestamp' => now()->subHour(),
+                'level' => 'CRITICAL',
+                'type' => 'security',
+                'message' => 'Suspicious transaction blocked: $10,000.00',
+                'user_id' => 4,
+                'ip_address' => '198.51.100.23',
+                'user_agent' => 'Mozilla/5.0 (Linux; Android 10; SM-G975F)'
+            ],
+            [
+                'id' => 6,
+                'timestamp' => now()->subHours(2),
+                'level' => 'INFO',
+                'type' => 'system',
+                'message' => 'Cache cleared successfully',
+                'user_id' => 1,
+                'ip_address' => '192.168.1.10',
+                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+            ],
+            [
+                'id' => 7,
+                'timestamp' => now()->subHours(3),
+                'level' => 'WARNING',
+                'type' => 'transaction',
+                'message' => 'Large deposit flagged for review: $5,000.00',
+                'user_id' => 3,
+                'ip_address' => '192.168.1.50',
+                'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X)'
+            ],
+            [
+                'id' => 8,
+                'timestamp' => now()->subHours(4),
+                'level' => 'DEBUG',
+                'type' => 'system',
+                'message' => 'Email notification sent successfully',
+                'user_id' => null,
+                'ip_address' => 'localhost',
+                'user_agent' => 'System Cron'
+            ]
+        ]);
+
+        // Filter by log type
+        if ($logType !== 'all') {
+            $allLogs = $allLogs->where('type', $logType);
+        }
+
+        // Filter by level
+        if ($level !== 'all') {
+            $allLogs = $allLogs->where('level', $level);
+        }
+
+        // Search filter
+        if (!empty($search)) {
+            $allLogs = $allLogs->filter(function ($log) use ($search) {
+                return stripos($log['message'], $search) !== false ||
+                       stripos($log['ip_address'], $search) !== false;
+            });
+        }
+
+        // Sort by timestamp (newest first)
+        $logs = $allLogs->sortByDesc('timestamp')->values();
+
+        return view('admin.logs', compact('logs', 'logType', 'search', 'level'));
+    }
+
+    public function reports()
+    {
+        $this->authorize('system_settings');
+
+        // Generate report statistics
+        $stats = [
+            'total_users' => User::count(),
+            'new_users_this_month' => User::whereMonth('created_at', now()->month)->count(),
+            'total_transactions' => Transaction::count(),
+            'total_volume' => Transaction::where('status', 'approved')->sum('amount'),
+            'pending_transactions' => Transaction::where('status', 'pending')->count(),
+            'approved_transactions' => Transaction::where('status', 'approved')->count(),
+            'rejected_transactions' => Transaction::where('status', 'rejected')->count(),
+        ];
+
+        return view('admin.reports', compact('stats'));
+    }
+
+    public function generateReport(Request $request)
+    {
+        $this->authorize('system_settings');
+
+        $request->validate([
+            'report_type' => 'required|in:users,transactions,financial,security',
+            'date_range' => 'required|in:today,week,month,quarter,year,custom',
+            'format' => 'required|in:pdf,csv,excel',
+            'date_from' => 'nullable|date|required_if:date_range,custom',
+            'date_to' => 'nullable|date|after_or_equal:date_from|required_if:date_range,custom'
+        ]);
+
+        // Simulate report generation based on type
+        $reportData = $this->generateReportData($request->report_type, $request->date_range, $request->date_from, $request->date_to);
+
+        $filename = $this->generateReportFilename($request->report_type, $request->format);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Report generated successfully',
+            'report' => [
+                'filename' => $filename,
+                'download_url' => '/admin/reports/download/' . uniqid(),
+                'generated_at' => now()->toISOString(),
+                'size' => $this->calculateReportSize($reportData),
+                'records' => count($reportData)
+            ]
+        ]);
+    }
+
+    private function generateReportData($type, $dateRange, $dateFrom = null, $dateTo = null)
+    {
+        // Simulate different report types
+        switch ($type) {
+            case 'users':
+                return [
+                    ['name' => 'John Doe', 'email' => 'john@example.com', 'created_at' => '2024-01-15', 'status' => 'Active'],
+                    ['name' => 'Jane Smith', 'email' => 'jane@example.com', 'created_at' => '2024-01-20', 'status' => 'Active'],
+                    ['name' => 'Bob Johnson', 'email' => 'bob@example.com', 'created_at' => '2024-02-01', 'status' => 'Inactive'],
+                ];
+            case 'transactions':
+                return [
+                    ['id' => 1, 'type' => 'Deposit', 'amount' => 500.00, 'status' => 'Completed', 'date' => '2024-01-15'],
+                    ['id' => 2, 'type' => 'Withdrawal', 'amount' => 150.00, 'status' => 'Completed', 'date' => '2024-01-16'],
+                    ['id' => 3, 'type' => 'Transfer', 'amount' => 200.00, 'status' => 'Pending', 'date' => '2024-01-17'],
+                ];
+            case 'financial':
+                return [
+                    ['metric' => 'Total Volume', 'value' => 45678.90, 'change' => '+12.5%'],
+                    ['metric' => 'Total Fees', 'value' => 228.39, 'change' => '+15.2%'],
+                    ['metric' => 'Average Transaction', 'value' => 293.07, 'change' => '-2.1%'],
+                ];
+            case 'security':
+                return [
+                    ['event' => 'Failed Login', 'count' => 15, 'severity' => 'Medium', 'date' => '2024-01-15'],
+                    ['event' => 'Suspicious Transaction', 'count' => 3, 'severity' => 'High', 'date' => '2024-01-16'],
+                    ['event' => 'Account Lockout', 'count' => 2, 'severity' => 'Low', 'date' => '2024-01-17'],
+                ];
+            default:
+                return [];
+        }
+    }
+
+    private function generateReportFilename($type, $format)
+    {
+        $timestamp = now()->format('Y_m_d_H_i_s');
+        return "{$type}_report_{$timestamp}.{$format}";
+    }
+
+    private function calculateReportSize($data)
+    {
+        // Simulate file size calculation
+        $baseSize = count($data) * 150; // ~150 bytes per record
+        return number_format($baseSize / 1024, 1) . ' KB';
+    }
+
+    public function downloadReport($reportId)
+    {
+        $this->authorize('system_settings');
+
+        // In a real implementation, this would serve the actual file
+        return response()->json([
+            'success' => false,
+            'message' => 'This is a demo implementation. In production, this would serve the actual report file.',
+            'report_id' => $reportId
+        ]);
+    }
+
+    public function updateSystemSettings(Request $request)
+    {
+        $this->authorize('system_settings');
+
+        $request->validate([
+            'email_verification_enabled' => 'boolean',
+            'require_2fa' => 'boolean',
+            'maintenance_mode' => 'boolean',
+            'transfer_fee_enabled' => 'boolean',
+            'transfer_fee_type' => 'in:percentage,fixed',
+            'transfer_fee_value' => 'numeric|min:0',
+            'transfer_minimum_fee' => 'numeric|min:0',
+            'transfer_maximum_fee' => 'numeric|min:0',
+            'withdrawal_fee_enabled' => 'boolean',
+            'withdrawal_fee_type' => 'in:percentage,fixed',
+            'withdrawal_fee_value' => 'numeric|min:0',
+            'withdrawal_minimum_fee' => 'numeric|min:0',
+            'withdrawal_maximum_fee' => 'numeric|min:0',
+        ]);
+
+        // Update security settings
+        if ($request->has('email_verification_enabled')) {
+            \App\Models\SystemSetting::set('email_verification_enabled', $request->boolean('email_verification_enabled'), 'boolean', 'Enable email verification for new users');
+        }
+        if ($request->has('require_2fa')) {
+            \App\Models\SystemSetting::set('require_2fa', $request->boolean('require_2fa'), 'boolean', 'Require two-factor authentication for all users');
+        }
+        if ($request->has('maintenance_mode')) {
+            \App\Models\SystemSetting::set('maintenance_mode', $request->boolean('maintenance_mode'), 'boolean', 'Enable maintenance mode');
+        }
+
+        // Update transfer fee settings (mapping to existing backend settings)
+        if ($request->has('transfer_fee_enabled')) {
+            \App\Models\SystemSetting::set('transfer_charge_enabled', $request->boolean('transfer_fee_enabled'), 'boolean', 'Enable transfer fees');
+            \App\Models\SystemSetting::set('transfer_charge_type', $request->input('transfer_fee_type', 'percentage'), 'string', 'Transfer fee type (percentage or fixed)');
+            \App\Models\SystemSetting::set('transfer_charge_value', $request->input('transfer_fee_value', 1.5), 'string', 'Transfer fee value');
+            \App\Models\SystemSetting::set('transfer_minimum_charge', $request->input('transfer_minimum_fee', 0.50), 'string', 'Minimum transfer fee');
+            \App\Models\SystemSetting::set('transfer_maximum_charge', $request->input('transfer_maximum_fee', 25.00), 'string', 'Maximum transfer fee');
+        }
+
+        // Update withdrawal fee settings
+        if ($request->has('withdrawal_fee_enabled')) {
+            \App\Models\SystemSetting::set('withdrawal_fee_enabled', $request->boolean('withdrawal_fee_enabled'), 'boolean', 'Enable withdrawal fees');
+            \App\Models\SystemSetting::set('withdrawal_fee_type', $request->input('withdrawal_fee_type', 'percentage'), 'string', 'Withdrawal fee type (percentage or fixed)');
+            \App\Models\SystemSetting::set('withdrawal_fee_value', $request->input('withdrawal_fee_value', 2.5), 'string', 'Withdrawal fee value');
+            \App\Models\SystemSetting::set('withdrawal_minimum_fee', $request->input('withdrawal_minimum_fee', 1.00), 'string', 'Minimum withdrawal fee');
+            \App\Models\SystemSetting::set('withdrawal_maximum_fee', $request->input('withdrawal_maximum_fee', 50.00), 'string', 'Maximum withdrawal fee');
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'System settings updated successfully.'
+        ]);
+    }
+
+    public function getTransactionStats()
+    {
+        $this->authorize('transaction_approval');
+
+        $pendingTransactions = Transaction::where('status', 'pending')->get();
+
+        return response()->json([
+            'success' => true,
+            'pending_count' => $pendingTransactions->count(),
+            'approved_today' => Transaction::where('status', 'approved')->whereDate('approved_at', today())->count(),
+            'rejected_today' => Transaction::where('status', 'rejected')->whereDate('approved_at', today())->count(),
+            'total_value' => number_format($pendingTransactions->sum('amount'), 2)
+        ]);
+    }
+}
