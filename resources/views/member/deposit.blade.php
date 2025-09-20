@@ -1,104 +1,235 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'Deposit Funds')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md mx-auto">
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Deposit Funds</h1>
-                        <p class="mt-1 text-sm text-gray-600">Add money to your e-wallet</p>
-                    </div>
-                    <a href="{{ route('dashboard') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm">
-                        Back
-                    </a>
+<!-- Page Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="card-title mb-0">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wallet') }}"></use>
+                    </svg>
+                    Deposit Funds
+                </h4>
+                <p class="text-body-secondary mb-0">Add money to your e-wallet</p>
+            </div>
+            <div>
+                <a href="{{ route('dashboard') }}" class="btn btn-secondary">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-arrow-left') }}"></use>
+                    </svg>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Current Balance Card -->
+<div class="row mb-4">
+    <div class="col-md-6 mx-auto">
+        <div class="card bg-primary-gradient text-white">
+            <div class="card-body text-center">
+                <h5 class="card-title">Current Balance</h5>
+                <h2 class="display-4 fw-bold">${{ number_format(auth()->user()->wallet ? auth()->user()->wallet->balance : 0, 2) }}</h2>
+                <p class="mb-0">Available for withdrawal and transfers</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Amount Buttons -->
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-speedometer') }}"></use>
+                </svg>
+                <strong>Quick Amounts</strong>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <button type="button" class="btn btn-outline-primary" onclick="setAmount(25)">$25</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="setAmount(50)">$50</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="setAmount(100)">$100</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="setAmount(250)">$250</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="setAmount(500)">$500</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="setAmount(1000)">$1,000</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                @if (session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                        <ul class="list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('wallet.deposit.process') }}">
+<!-- Deposit Form -->
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-plus') }}"></use>
+                </svg>
+                <strong>Deposit Form</strong>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('wallet.deposit.process') }}" id="deposit-form">
                     @csrf
-                    <div class="space-y-6">
-                        <div>
-                            <label for="amount" class="block text-sm font-medium text-gray-700">
-                                Deposit Amount ($)
-                            </label>
-                            <div class="mt-1 relative rounded-md shadow-sm">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">$</span>
-                                </div>
-                                <input type="number" name="amount" id="amount"
-                                       class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
-                                       placeholder="0.00" min="1" max="10000" step="0.01" required
-                                       value="{{ old('amount') }}">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">USD</span>
-                                </div>
-                            </div>
-                            <p class="mt-1 text-xs text-gray-500">
-                                Minimum: $1.00 | Maximum: $10,000.00
-                            </p>
-                        </div>
-
-                        <div>
-                            <label for="payment_method" class="block text-sm font-medium text-gray-700">
-                                Payment Method
-                            </label>
-                            <select id="payment_method" name="payment_method"
-                                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" required>
-                                <option value="">Select Payment Method</option>
-                                <option value="bank_transfer" {{ old('payment_method') == 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                                <option value="credit_card" {{ old('payment_method') == 'credit_card' ? 'selected' : '' }}>Credit Card</option>
-                                <option value="paypal" {{ old('payment_method') == 'paypal' ? 'selected' : '' }}>PayPal</option>
-                            </select>
-                        </div>
-
-                        <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">
+                                    <svg class="icon me-2">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-dollar') }}"></use>
                                     </svg>
+                                    Deposit Amount
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="amount" id="amount" class="form-control"
+                                           placeholder="0.00" min="1" max="10000" step="0.01" required
+                                           value="{{ old('amount') }}">
+                                    <span class="input-group-text">USD</span>
                                 </div>
-                                <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-blue-800">
-                                        Security Notice
-                                    </h3>
-                                    <div class="mt-2 text-sm text-blue-700">
-                                        <p>All transactions are encrypted and secure. Funds will be available immediately after processing.</p>
-                                    </div>
+                                <div class="form-text">
+                                    Minimum: $1.00 | Maximum: $10,000.00
                                 </div>
                             </div>
                         </div>
 
-                        <div>
-                            <button type="submit"
-                                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Process Deposit
-                            </button>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="payment_method" class="form-label">
+                                    <svg class="icon me-2">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-credit-card') }}"></use>
+                                    </svg>
+                                    Payment Method
+                                </label>
+                                <select id="payment_method" name="payment_method" class="form-select" required>
+                                    <option value="">Select Payment Method</option>
+                                    <option value="bank_transfer" {{ old('payment_method') == 'bank_transfer' ? 'selected' : '' }}>
+                                        Bank Transfer (3-5 business days)
+                                    </option>
+                                    <option value="credit_card" {{ old('payment_method') == 'credit_card' ? 'selected' : '' }}>
+                                        Credit Card (Instant)
+                                    </option>
+                                    <option value="debit_card" {{ old('payment_method') == 'debit_card' ? 'selected' : '' }}>
+                                        Debit Card (Instant)
+                                    </option>
+                                    <option value="paypal" {{ old('payment_method') == 'paypal' ? 'selected' : '' }}>
+                                        PayPal (Instant)
+                                    </option>
+                                </select>
+                            </div>
                         </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-notes') }}"></use>
+                            </svg>
+                            Description (Optional)
+                        </label>
+                        <textarea id="description" name="description" class="form-control" rows="2"
+                                  placeholder="Add a note for this deposit...">{{ old('description') }}</textarea>
+                    </div>
+
+                    <!-- Fee Information -->
+                    <div class="alert alert-warning d-flex align-items-start mb-3">
+                        <svg class="icon me-2 flex-shrink-0">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-warning') }}"></use>
+                        </svg>
+                        <div>
+                            <h6 class="alert-heading">Fee Information</h6>
+                            <ul class="mb-0 small">
+                                <li>Bank Transfer: No fees</li>
+                                <li>Credit/Debit Card: 2.9% + $0.30</li>
+                                <li>PayPal: 2.4% + $0.30</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Security Notice -->
+                    <div class="alert alert-info d-flex align-items-start mb-3">
+                        <svg class="icon me-2 flex-shrink-0">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-shield-alt') }}"></use>
+                        </svg>
+                        <div>
+                            <h6 class="alert-heading">Security & Processing</h6>
+                            <p class="mb-1">All transactions are encrypted using industry-standard SSL security.</p>
+                            <p class="mb-0 small">Your deposit will be reviewed and processed by our admin team. You'll receive an email confirmation once approved.</p>
+                        </div>
+                    </div>
+
+                    <!-- Estimated Total -->
+                    <div id="fee-calculation" class="card bg-light mb-3 d-none">
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="text-body-secondary small">Deposit Amount</div>
+                                    <div class="fw-bold" id="deposit-amount">$0.00</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-body-secondary small">Processing Fee</div>
+                                    <div class="fw-bold text-warning" id="processing-fee">$0.00</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-body-secondary small">Total to Pay</div>
+                                    <div class="fw-bold text-primary" id="total-amount">$0.00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+                            </svg>
+                            Submit Deposit Request
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function setAmount(amount) {
+    document.getElementById('amount').value = amount;
+    calculateFees();
+}
+
+function calculateFees() {
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const paymentMethod = document.getElementById('payment_method').value;
+
+    let fee = 0;
+
+    if (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') {
+        fee = amount * 0.029 + 0.30;
+    } else if (paymentMethod === 'paypal') {
+        fee = amount * 0.024 + 0.30;
+    }
+
+    const total = amount + fee;
+
+    if (amount > 0 && paymentMethod) {
+        document.getElementById('fee-calculation').classList.remove('d-none');
+        document.getElementById('deposit-amount').textContent = '$' + amount.toFixed(2);
+        document.getElementById('processing-fee').textContent = '$' + fee.toFixed(2);
+        document.getElementById('total-amount').textContent = '$' + total.toFixed(2);
+    } else {
+        document.getElementById('fee-calculation').classList.add('d-none');
+    }
+}
+
+document.getElementById('amount').addEventListener('input', calculateFees);
+document.getElementById('payment_method').addEventListener('change', calculateFees);
+</script>
 @endsection

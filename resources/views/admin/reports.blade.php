@@ -1,281 +1,289 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'System Reports')
 
 @section('content')
 <!-- Success/Error Messages -->
-<div id="alert-container" class="fixed top-4 right-4 z-50"></div>
+<div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
 
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="bg-white overflow-hidden shadow rounded-lg mb-8">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">System Reports</h1>
-                        <p class="mt-1 text-sm text-gray-600">Generate comprehensive system and business reports</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button onclick="refreshStats()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
-                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                            Refresh Stats
-                        </button>
-                        <a href="{{ route('admin.dashboard') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm">
-                            Back to Dashboard
-                        </a>
-                    </div>
-                </div>
+<!-- Page Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="card-title mb-0">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-chart-pie') }}"></use>
+                    </svg>
+                    System Reports
+                </h4>
+                <p class="text-body-secondary mb-0">Generate comprehensive system and business reports</p>
+            </div>
+            <div>
+                <button onclick="refreshStats()" class="btn btn-primary me-2">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-reload') }}"></use>
+                    </svg>
+                    Refresh Stats
+                </button>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-arrow-left') }}"></use>
+                    </svg>
+                    Back to Dashboard
+                </a>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Report Statistics Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Users</dt>
-                                <dd class="text-lg font-medium text-gray-900">{{ number_format($stats['total_users']) }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <span class="text-sm text-green-600">+{{ $stats['new_users_this_month'] }} this month</span>
-                    </div>
+<!-- Report Statistics Overview -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-primary-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">{{ number_format($stats['total_users']) }}</div>
+                    <div>Total Users</div>
+                    <div class="small mt-1">+{{ $stats['new_users_this_month'] }} this month</div>
                 </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Transactions</dt>
-                                <dd class="text-lg font-medium text-gray-900">{{ number_format($stats['total_transactions']) }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <span class="text-sm text-gray-500">{{ $stats['approved_transactions'] }} approved, {{ $stats['pending_transactions'] }} pending</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Transaction Volume</dt>
-                                <dd class="text-lg font-medium text-gray-900">${{ number_format($stats['total_volume'], 2) }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <span class="text-sm text-green-600">+12.5% from last month</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Rejected Transactions</dt>
-                                <dd class="text-lg font-medium text-gray-900">{{ $stats['rejected_transactions'] }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <span class="text-sm text-red-500">{{ number_format(($stats['rejected_transactions']/$stats['total_transactions'])*100, 1) }}% rejection rate</span>
-                    </div>
-                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-people') }}"></use>
+                </svg>
             </div>
         </div>
+    </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Report Generation Form -->
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Generate New Report</h3>
-                    <form id="report-form" class="space-y-6">
-                        @csrf
-                        <div>
-                            <label for="report_type" class="block text-sm font-medium text-gray-700">Report Type</label>
-                            <select id="report_type" name="report_type" required
-                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="">Select Report Type</option>
-                                <option value="users">User Activity Report</option>
-                                <option value="transactions">Transaction Report</option>
-                                <option value="financial">Financial Summary Report</option>
-                                <option value="security">Security Audit Report</option>
-                            </select>
-                        </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-success-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">{{ number_format($stats['total_transactions']) }}</div>
+                    <div>Total Transactions</div>
+                    <div class="small mt-1">{{ $stats['approved_transactions'] }} approved, {{ $stats['pending_transactions'] }} pending</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-swap-horizontal') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
 
-                        <div>
-                            <label for="date_range" class="block text-sm font-medium text-gray-700">Date Range</label>
-                            <select id="date_range" name="date_range" required onchange="toggleCustomDates()"
-                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="">Select Date Range</option>
-                                <option value="today">Today</option>
-                                <option value="week">Last 7 Days</option>
-                                <option value="month">Last 30 Days</option>
-                                <option value="quarter">Last Quarter</option>
-                                <option value="year">Last Year</option>
-                                <option value="custom">Custom Date Range</option>
-                            </select>
-                        </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-warning-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">${{ number_format($stats['total_volume'], 2) }}</div>
+                    <div>Transaction Volume</div>
+                    <div class="small mt-1">+12.5% from last month</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-dollar') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
 
-                        <div id="custom-dates" class="hidden space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="date_from" class="block text-sm font-medium text-gray-700">From Date</label>
-                                    <input type="date" id="date_from" name="date_from"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                </div>
-                                <div>
-                                    <label for="date_to" class="block text-sm font-medium text-gray-700">To Date</label>
-                                    <input type="date" id="date_to" name="date_to"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-danger-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">{{ $stats['rejected_transactions'] }}</div>
+                    <div>Rejected Transactions</div>
+                    <div class="small mt-1">{{ number_format(($stats['rejected_transactions']/$stats['total_transactions'])*100, 1) }}% rejection rate</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Generation and Templates -->
+<div class="row g-3">
+    <div class="col-lg-6">
+        <!-- Report Generation Form -->
+        <div class="card">
+            <div class="card-header">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-file') }}"></use>
+                </svg>
+                <strong>Generate New Report</strong>
+            </div>
+            <div class="card-body">
+                <form id="report-form">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="report_type" class="form-label">Report Type</label>
+                        <select id="report_type" name="report_type" class="form-select" required>
+                            <option value="">Select Report Type</option>
+                            <option value="users">User Activity Report</option>
+                            <option value="transactions">Transaction Report</option>
+                            <option value="financial">Financial Summary Report</option>
+                            <option value="security">Security Audit Report</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="date_range" class="form-label">Date Range</label>
+                        <select id="date_range" name="date_range" class="form-select" required onchange="toggleCustomDates()">
+                            <option value="">Select Date Range</option>
+                            <option value="today">Today</option>
+                            <option value="week">Last 7 Days</option>
+                            <option value="month">Last 30 Days</option>
+                            <option value="quarter">Last Quarter</option>
+                            <option value="year">Last Year</option>
+                            <option value="custom">Custom Date Range</option>
+                        </select>
+                    </div>
+
+                    <div id="custom-dates" class="d-none">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="date_from" class="form-label">From Date</label>
+                                <input type="date" id="date_from" name="date_from" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="date_to" class="form-label">To Date</label>
+                                <input type="date" id="date_to" name="date_to" class="form-control">
                             </div>
                         </div>
+                    </div>
 
-                        <div>
-                            <label for="format" class="block text-sm font-medium text-gray-700">Export Format</label>
-                            <select id="format" name="format" required
-                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="">Select Format</option>
-                                <option value="pdf">PDF Document</option>
-                                <option value="csv">CSV Spreadsheet</option>
-                                <option value="excel">Excel Workbook</option>
-                            </select>
-                        </div>
+                    <div class="mb-3">
+                        <label for="format" class="form-label">Export Format</label>
+                        <select id="format" name="format" class="form-select" required>
+                            <option value="">Select Format</option>
+                            <option value="pdf">PDF Document</option>
+                            <option value="csv">CSV Spreadsheet</option>
+                            <option value="excel">Excel Workbook</option>
+                        </select>
+                    </div>
 
-                        <div class="pt-5">
-                            <button type="submit" id="generate-btn"
-                                class="w-full bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                Generate Report
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <button type="submit" id="generate-btn" class="btn btn-primary w-100">
+                        <svg class="icon me-2">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-file-plus') }}"></use>
+                        </svg>
+                        Generate Report
+                    </button>
+                </form>
             </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="row g-3">
 
             <!-- Quick Report Templates -->
-            <div class="space-y-6">
-                <!-- Pre-built Report Templates -->
-                <div class="bg-white shadow rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Quick Report Templates</h3>
-                        <div class="space-y-3">
-                            <button onclick="generateQuickReport('daily-summary')" class="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-4 text-left transition-colors">
-                                <div class="flex items-center">
-                                    <svg class="h-5 w-5 text-blue-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            <div class="col-12 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="icon me-2">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-speedometer') }}"></use>
+                        </svg>
+                        <strong>Quick Report Templates</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-3">
+                            <button onclick="generateQuickReport('daily-summary')" class="btn btn-outline-primary text-start p-3">
+                                <div class="d-flex align-items-center">
+                                    <svg class="icon icon-lg text-primary me-3">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-chart-line') }}"></use>
                                     </svg>
                                     <div>
-                                        <h4 class="text-sm font-medium text-gray-900">Daily Summary Report</h4>
-                                        <p class="text-sm text-gray-500">Today's transactions and user activity</p>
+                                        <div class="fw-semibold">Daily Summary Report</div>
+                                        <small class="text-body-secondary">Today's transactions and user activity</small>
                                     </div>
                                 </div>
                             </button>
 
-                            <button onclick="generateQuickReport('weekly-financial')" class="w-full bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg p-4 text-left transition-colors">
-                                <div class="flex items-center">
-                                    <svg class="h-5 w-5 text-green-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                            <button onclick="generateQuickReport('weekly-financial')" class="btn btn-outline-success text-start p-3">
+                                <div class="d-flex align-items-center">
+                                    <svg class="icon icon-lg text-success me-3">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-dollar') }}"></use>
                                     </svg>
                                     <div>
-                                        <h4 class="text-sm font-medium text-gray-900">Weekly Financial Report</h4>
-                                        <p class="text-sm text-gray-500">7-day financial performance summary</p>
+                                        <div class="fw-semibold">Weekly Financial Report</div>
+                                        <small class="text-body-secondary">7-day financial performance summary</small>
                                     </div>
                                 </div>
                             </button>
 
-                            <button onclick="generateQuickReport('security-audit')" class="w-full bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg p-4 text-left transition-colors">
-                                <div class="flex items-center">
-                                    <svg class="h-5 w-5 text-red-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            <button onclick="generateQuickReport('security-audit')" class="btn btn-outline-danger text-start p-3">
+                                <div class="d-flex align-items-center">
+                                    <svg class="icon icon-lg text-danger me-3">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-shield-alt') }}"></use>
                                     </svg>
                                     <div>
-                                        <h4 class="text-sm font-medium text-gray-900">Security Audit Report</h4>
-                                        <p class="text-sm text-gray-500">Monthly security events and threats</p>
+                                        <div class="fw-semibold">Security Audit Report</div>
+                                        <small class="text-body-secondary">Monthly security events and threats</small>
                                     </div>
                                 </div>
                             </button>
 
-                            <button onclick="generateQuickReport('compliance')" class="w-full bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 rounded-lg p-4 text-left transition-colors">
-                                <div class="flex items-center">
-                                    <svg class="h-5 w-5 text-yellow-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                            <button onclick="generateQuickReport('compliance')" class="btn btn-outline-warning text-start p-3">
+                                <div class="d-flex align-items-center">
+                                    <svg class="icon icon-lg text-warning me-3">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
                                     </svg>
                                     <div>
-                                        <h4 class="text-sm font-medium text-gray-900">Compliance Report</h4>
-                                        <p class="text-sm text-gray-500">Regulatory compliance summary</p>
+                                        <div class="fw-semibold">Compliance Report</div>
+                                        <small class="text-body-secondary">Regulatory compliance summary</small>
                                     </div>
                                 </div>
                             </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Recent Reports -->
-                <div class="bg-white shadow rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Recent Reports</h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <!-- Recent Reports -->
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <svg class="icon me-2">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-history') }}"></use>
+                        </svg>
+                        <strong>Recent Reports</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h4 class="text-sm font-medium text-gray-900">Financial Summary - December 2024</h4>
-                                    <p class="text-sm text-gray-500">Generated 2 hours ago • 45.2 KB</p>
+                                    <div class="fw-semibold">Financial Summary - December 2024</div>
+                                    <small class="text-body-secondary">Generated 2 hours ago • 45.2 KB</small>
                                 </div>
-                                <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <svg class="icon me-1">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-cloud-download') }}"></use>
+                                    </svg>
                                     Download
                                 </button>
                             </div>
 
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h4 class="text-sm font-medium text-gray-900">User Activity Report - Q4 2024</h4>
-                                    <p class="text-sm text-gray-500">Generated yesterday • 127.8 KB</p>
+                                    <div class="fw-semibold">User Activity Report - Q4 2024</div>
+                                    <small class="text-body-secondary">Generated yesterday • 127.8 KB</small>
                                 </div>
-                                <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <svg class="icon me-1">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-cloud-download') }}"></use>
+                                    </svg>
                                     Download
                                 </button>
                             </div>
 
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h4 class="text-sm font-medium text-gray-900">Security Audit - November 2024</h4>
-                                    <p class="text-sm text-gray-500">Generated 3 days ago • 89.4 KB</p>
+                                    <div class="fw-semibold">Security Audit - November 2024</div>
+                                    <small class="text-body-secondary">Generated 3 days ago • 89.4 KB</small>
                                 </div>
-                                <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <svg class="icon me-1">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-cloud-download') }}"></use>
+                                    </svg>
                                     Download
                                 </button>
                             </div>
@@ -297,11 +305,11 @@ function toggleCustomDates() {
     const customDates = document.getElementById('custom-dates');
 
     if (dateRange === 'custom') {
-        customDates.classList.remove('hidden');
+        customDates.classList.remove('d-none');
         document.getElementById('date_from').required = true;
         document.getElementById('date_to').required = true;
     } else {
-        customDates.classList.add('hidden');
+        customDates.classList.add('d-none');
         document.getElementById('date_from').required = false;
         document.getElementById('date_to').required = false;
     }
@@ -323,10 +331,7 @@ document.getElementById('report-form').addEventListener('submit', function(e) {
     // Show loading state
     generateBtn.disabled = true;
     generateBtn.innerHTML = `
-        <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+        <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
         Generating...
     `;
 
@@ -419,19 +424,26 @@ function generateQuickReport(template) {
 
 function showAlert(message, type = 'success') {
     const alertContainer = document.getElementById('alert-container');
-    const alertClass = type === 'success' ? 'bg-green-100 text-green-700 border-green-400' : 'bg-red-100 text-red-700 border-red-400';
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
 
     const alert = document.createElement('div');
-    alert.className = `${alertClass} border px-4 py-3 rounded mb-4 shadow-lg max-w-sm`;
+    alert.className = `alert ${alertClass} alert-dismissible fade show shadow`;
     alert.innerHTML = `
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()" class="float-right text-xl leading-none">&times;</button>
+        <div class="d-flex align-items-center">
+            <svg class="icon me-2">
+                <use xlink:href="${window.location.origin}/coreui-template/vendors/@coreui/icons/svg/free.svg#cil-${type === 'success' ? 'check' : 'x'}"></use>
+            </svg>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.remove()"></button>
     `;
 
     alertContainer.appendChild(alert);
 
     setTimeout(() => {
-        alert.remove();
+        if (alert.parentElement) {
+            alert.remove();
+        }
     }, 5000);
 }
 </script>

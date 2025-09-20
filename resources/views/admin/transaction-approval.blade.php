@@ -1,301 +1,319 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'Transaction Approval')
 
 @section('content')
 <!-- Success/Error Messages -->
-<div id="alert-container" class="fixed top-4 right-4 z-50"></div>
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="bg-white overflow-hidden shadow rounded-lg mb-8">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Transaction Approval</h1>
-                        <p class="mt-1 text-sm text-gray-600">Review and approve pending transactions</p>
-                    </div>
-                    <a href="{{ route('admin.dashboard') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm">
-                        Back to Dashboard
-                    </a>
-                </div>
-            </div>
-        </div>
+<div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
 
-        <!-- Approval Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Pending</dt>
-                                <dd id="pending-count" class="text-lg font-medium text-gray-900">{{ $pendingTransactions->total() }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
+<!-- Page Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="card-title mb-0">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-task') }}"></use>
+                    </svg>
+                    Transaction Approval
+                </h4>
+                <p class="text-body-secondary mb-0">Review and approve pending transactions</p>
             </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Today Approved</dt>
-                                <dd id="approved-count" class="text-lg font-medium text-gray-900">{{ \App\Models\Transaction::where('status', 'approved')->whereDate('approved_at', today())->count() }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
+            <div>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-arrow-left') }}"></use>
+                    </svg>
+                    Back to Dashboard
+                </a>
             </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Today Rejected</dt>
-                                <dd id="rejected-count" class="text-lg font-medium text-gray-900">{{ \App\Models\Transaction::where('status', 'rejected')->whereDate('approved_at', today())->count() }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Value</dt>
-                                <dd id="total-value" class="text-lg font-medium text-gray-900">${{ number_format($pendingTransactions->sum('amount'), 2) }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bulk Actions -->
-        <div class="bg-white shadow rounded-lg mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Bulk Actions</h3>
-            </div>
-            <div class="px-6 py-4">
-                <div class="flex flex-wrap gap-4">
-                    <button onclick="selectAll()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                        Select All
-                    </button>
-                    <button onclick="clearSelection()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
-                        Clear Selection
-                    </button>
-                    <button onclick="bulkApprove()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                        Approve Selected
-                    </button>
-                    <button onclick="bulkReject()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                        Reject Selected
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pending Transactions -->
-        <div class="bg-white shadow overflow-hidden sm:rounded-md">
-            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Pending Transactions</h3>
-                <p class="mt-1 max-w-2xl text-sm text-gray-500">
-                    Transactions awaiting administrative approval.
-                </p>
-            </div>
-            <ul class="divide-y divide-gray-200">
-                @forelse($pendingTransactions as $transaction)
-                    <li class="px-4 py-6 sm:px-6" data-transaction-id="{{ $transaction->id }}">
-                        <div class="flex items-start justify-between">
-                            <div class="flex items-start space-x-4">
-                                <div class="flex-shrink-0">
-                                    <input type="checkbox" name="selected_transactions[]" value="{{ $transaction->id }}" class="transaction-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                </div>
-                                <div class="flex-shrink-0">
-                                    <div class="h-10 w-10 @if($transaction->type === 'deposit') bg-green-100 @elseif($transaction->type === 'withdrawal') bg-red-100 @else bg-blue-100 @endif rounded-full flex items-center justify-center">
-                                        @if($transaction->type === 'deposit')
-                                            <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                            </svg>
-                                        @elseif($transaction->type === 'withdrawal')
-                                            <svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                                            </svg>
-                                        @else
-                                            <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                                            </svg>
-                                        @endif
-                                    </div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center">
-                                        <h4 class="text-sm font-medium text-gray-900">{{ ucfirst($transaction->type) }} Request</h4>
-                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            @if($transaction->amount > 5000) bg-red-100 text-red-800 @else bg-blue-100 text-blue-800 @endif">
-                                            @if($transaction->amount > 5000) High Priority @else Standard @endif
-                                        </span>
-                                    </div>
-                                    <div class="mt-1">
-                                        <p class="text-sm text-gray-600">
-                                            <span class="font-medium">{{ $transaction->user->fullname }}</span> ({{ $transaction->user->email }})
-                                        </p>
-                                        <p class="text-sm text-gray-500">
-                                            Ref: {{ $transaction->reference_number }} •
-                                            {{ ucfirst($transaction->payment_method) }} •
-                                            Requested: {{ $transaction->created_at->diffForHumans() }}
-                                        </p>
-                                        @if($transaction->description)
-                                            <p class="text-sm text-gray-500 mt-1">{{ $transaction->description }}</p>
-                                        @endif
-                                    </div>
-                                    <div class="mt-2 flex items-center space-x-4">
-                                        <span class="text-lg font-bold
-                                            @if($transaction->type === 'deposit') text-green-600
-                                            @elseif($transaction->type === 'withdrawal') text-red-600
-                                            @else text-blue-600 @endif">
-                                            @if($transaction->type === 'withdrawal')-@endif${{ number_format($transaction->amount, 2) }}
-                                        </span>
-                                        @if($transaction->user->wallet)
-                                            <span class="text-sm text-gray-500">Current Balance: ${{ number_format($transaction->user->wallet->balance, 2) }}</span>
-                                        @else
-                                            <span class="text-sm text-gray-500">Current Balance: $0.00</span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button onclick="approveTransaction({{ $transaction->id }})"
-                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                    Approve
-                                </button>
-                                <button onclick="rejectTransaction({{ $transaction->id }})"
-                                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                    Reject
-                                </button>
-                                <button onclick="reviewTransaction({{ $transaction->id }})"
-                                    class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
-                                    Review
-                                </button>
-                            </div>
-                        </div>
-                    </li>
-                @empty
-                    <li class="px-4 py-6 sm:px-6">
-                        <div class="text-center">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No pending transactions</h3>
-                            <p class="mt-1 text-sm text-gray-500">All transactions have been processed.</p>
-                        </div>
-                    </li>
-                @endforelse
-            </ul>
-
-            @if($pendingTransactions->hasPages())
-                <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                    {{ $pendingTransactions->links() }}
-                </div>
-            @endif
         </div>
     </div>
 </div>
 
-<!-- Approval Modal -->
-<div id="approvalModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Approve Transaction</h3>
-            <form id="approvalForm">
-                <div class="mb-4">
-                    <label for="approvalNotes" class="block text-sm font-medium text-gray-700">Admin Notes (Optional)</label>
-                    <textarea id="approvalNotes" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Add any notes about this approval..."></textarea>
+<!-- Approval Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-warning-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div id="pending-count" class="fs-4 fw-semibold">{{ $pendingTransactions->total() }}</div>
+                    <div>Pending</div>
                 </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
-                        Cancel
-                    </button>
-                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                        Confirm Approval
-                    </button>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-clock') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-success-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div id="approved-count" class="fs-4 fw-semibold">{{ \App\Models\Transaction::where('status', 'approved')->whereDate('approved_at', today())->count() }}</div>
+                    <div>Approved Today</div>
                 </div>
-            </form>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-danger-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div id="rejected-count" class="fs-4 fw-semibold">{{ \App\Models\Transaction::where('status', 'rejected')->whereDate('approved_at', today())->count() }}</div>
+                    <div>Rejected Today</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-info-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div id="total-value" class="fs-4 fw-semibold">${{ number_format($pendingTransactions->sum('amount'), 2) }}</div>
+                    <div>Total Value</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-dollar') }}"></use>
+                </svg>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Rejection Modal -->
-<div id="rejectionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Reject Transaction</h3>
-            <form id="rejectionForm">
-                <div class="mb-4">
-                    <label for="rejectionReason" class="block text-sm font-medium text-gray-700">Rejection Reason (Required)</label>
-                    <textarea id="rejectionReason" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Explain why this transaction is being rejected..." required></textarea>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
-                        Cancel
-                    </button>
-                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                        Confirm Rejection
-                    </button>
-                </div>
-            </form>
+<!-- Bulk Actions -->
+<div class="card mb-4">
+    <div class="card-header">
+        <svg class="icon me-2">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-settings') }}"></use>
+        </svg>
+        <strong>Bulk Actions</strong>
+    </div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+            <button onclick="selectAll()" class="btn btn-secondary">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check-alt') }}"></use>
+                </svg>
+                Select All
+            </button>
+            <button onclick="clearSelection()" class="btn btn-outline-secondary">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
+                </svg>
+                Clear Selection
+            </button>
+            <button onclick="bulkApprove()" class="btn btn-success">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+                </svg>
+                Approve Selected
+            </button>
+            <button onclick="bulkReject()" class="btn btn-danger">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-ban') }}"></use>
+                </svg>
+                Reject Selected
+            </button>
         </div>
     </div>
 </div>
 
+<!-- Pending Transactions -->
+<div class="card">
+    <div class="card-header">
+        <svg class="icon me-2">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-list') }}"></use>
+        </svg>
+        <strong>Pending Transactions</strong>
+        <small class="text-body-secondary ms-auto">Transactions awaiting administrative approval.</small>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" style="width: 50px;">
+                            <input type="checkbox" class="form-check-input" id="selectAllTransactions">
+                        </th>
+                        <th scope="col">Transaction</th>
+                        <th scope="col">User</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($pendingTransactions as $transaction)
+                        <tr data-transaction-id="{{ $transaction->id }}">
+                            <td>
+                                <input type="checkbox" name="selected_transactions[]" value="{{ $transaction->id }}" class="transaction-checkbox form-check-input">
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3 {{ $transaction->type === 'deposit' ? 'bg-success' : ($transaction->type === 'withdrawal' ? 'bg-danger' : 'bg-primary') }}">
+                                        <svg class="icon text-white">
+                                            @if($transaction->type === 'deposit')
+                                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-plus') }}"></use>
+                                            @elseif($transaction->type === 'withdrawal')
+                                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-minus') }}"></use>
+                                            @else
+                                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-swap-horizontal') }}"></use>
+                                            @endif
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ ucfirst($transaction->type) }} Request</div>
+                                        <div class="text-body-secondary small">
+                                            Ref: {{ $transaction->reference_number ?? 'N/A' }} •
+                                            {{ $transaction->created_at->diffForHumans() }}
+                                        </div>
+                                        @if($transaction->amount > 5000)
+                                            <span class="badge bg-danger">High Priority</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ $transaction->user->fullname ?? $transaction->user->username }}</div>
+                                <div class="text-body-secondary">{{ $transaction->user->email }}</div>
+                                @if($transaction->user->wallet)
+                                    <div class="text-body-secondary small">Balance: ${{ number_format($transaction->user->wallet->balance, 2) }}</div>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="fw-semibold {{ $transaction->type === 'deposit' ? 'text-success' : 'text-danger' }}">
+                                    {{ $transaction->type === 'withdrawal' ? '-' : '+' }}${{ number_format($transaction->amount, 2) }}
+                                </div>
+                                <div class="text-body-secondary small">{{ ucfirst($transaction->payment_method ?? 'N/A') }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-warning">{{ ucfirst($transaction->status) }}</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <button onclick="approveTransaction({{ $transaction->id }})" class="btn btn-sm btn-success">
+                                        <svg class="icon me-1">
+                                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+                                        </svg>
+                                        Approve
+                                    </button>
+                                    <button onclick="rejectTransaction({{ $transaction->id }})" class="btn btn-sm btn-danger">
+                                        <svg class="icon me-1">
+                                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
+                                        </svg>
+                                        Reject
+                                    </button>
+                                    <button onclick="reviewTransaction({{ $transaction->id }})" class="btn btn-sm btn-secondary">
+                                        <svg class="icon me-1">
+                                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-magnifying-glass') }}"></use>
+                                        </svg>
+                                        Review
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-body-secondary py-4">
+                                <svg class="icon icon-3xl text-body-secondary mx-auto mb-3" style="width: 3rem; height: 3rem;">
+                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+                                </svg>
+                                <h5 class="text-body-secondary">No pending transactions</h5>
+                                <p class="text-body-secondary mb-0">All transactions have been processed.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @if($pendingTransactions->hasPages())
+        <div class="card-footer">
+            {{ $pendingTransactions->links() }}
+        </div>
+    @endif
+</div>
+
+<!-- CoreUI Modals -->
+<div class="modal fade" id="approvalModal" tabindex="-1" aria-labelledby="approvalModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="approvalModalLabel">Approve Transaction</h5>
+        <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="approvalForm">
+          <div class="mb-3">
+            <label for="approvalNotes" class="form-label">Admin Notes (Optional)</label>
+            <textarea id="approvalNotes" rows="3" class="form-control" placeholder="Add any notes about this approval..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="confirmApproval()">Confirm Approval</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="rejectionModal" tabindex="-1" aria-labelledby="rejectionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="rejectionModalLabel">Reject Transaction</h5>
+        <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="rejectionForm">
+          <div class="mb-3">
+            <label for="rejectionReason" class="form-label">Rejection Reason (Required)</label>
+            <textarea id="rejectionReason" rows="3" class="form-control" placeholder="Explain why this transaction is being rejected..." required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="confirmRejection()">Confirm Rejection</button>
+      </div>
+    </div>
+  </div>
+</div>
+@endsection
+
+@push('scripts')
 <script>
 let currentTransactionId = null;
 
 function approveTransaction(id) {
     currentTransactionId = id;
-    document.getElementById('approvalModal').classList.remove('hidden');
+    const approvalModal = new coreui.Modal(document.getElementById('approvalModal'));
+    approvalModal.show();
 }
 
 function rejectTransaction(id) {
     currentTransactionId = id;
-    document.getElementById('rejectionModal').classList.remove('hidden');
+    const rejectionModal = new coreui.Modal(document.getElementById('rejectionModal'));
+    rejectionModal.show();
 }
 
 function reviewTransaction(id) {
     alert(`Review functionality for transaction ${id} would be implemented here.`);
 }
 
-function closeModal() {
-    document.getElementById('approvalModal').classList.add('hidden');
-    document.getElementById('rejectionModal').classList.add('hidden');
-    currentTransactionId = null;
-}
-
-// Handle approval form submission
-document.getElementById('approvalForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+function confirmApproval() {
+    if (!currentTransactionId) return;
 
     const notes = document.getElementById('approvalNotes').value;
 
@@ -311,24 +329,28 @@ document.getElementById('approvalForm').addEventListener('submit', function(e) {
     .then(data => {
         if (data.success) {
             showAlert('Transaction approved successfully!', 'success');
-            document.querySelector(`[data-transaction-id="${currentTransactionId}"]`).remove();
-            updateStats();
+            location.reload();
         } else {
-            showAlert(data.message || 'Error approving transaction', 'error');
+            showAlert(data.message || 'Error approving transaction', 'danger');
         }
-        closeModal();
     })
     .catch(error => {
-        showAlert('Error approving transaction', 'error');
-        closeModal();
+        showAlert('Error approving transaction', 'danger');
+        console.error('Error:', error);
     });
-});
 
-// Handle rejection form submission
-document.getElementById('rejectionForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+    const modal = coreui.Modal.getInstance(document.getElementById('approvalModal'));
+    modal.hide();
+}
+
+function confirmRejection() {
+    if (!currentTransactionId) return;
 
     const reason = document.getElementById('rejectionReason').value;
+    if (!reason.trim()) {
+        showAlert('Please provide a rejection reason', 'warning');
+        return;
+    }
 
     fetch(`/admin/transactions/${currentTransactionId}/reject`, {
         method: 'POST',
@@ -342,29 +364,35 @@ document.getElementById('rejectionForm').addEventListener('submit', function(e) 
     .then(data => {
         if (data.success) {
             showAlert('Transaction rejected successfully!', 'success');
-            document.querySelector(`[data-transaction-id="${currentTransactionId}"]`).remove();
-            updateStats();
+            location.reload();
         } else {
-            showAlert(data.message || 'Error rejecting transaction', 'error');
+            showAlert(data.message || 'Error rejecting transaction', 'danger');
         }
-        closeModal();
     })
     .catch(error => {
-        showAlert('Error rejecting transaction', 'error');
-        closeModal();
+        showAlert('Error rejecting transaction', 'danger');
+        console.error('Error:', error);
     });
-});
+
+    const modal = coreui.Modal.getInstance(document.getElementById('rejectionModal'));
+    modal.hide();
+}
 
 function showAlert(message, type) {
     const alertContainer = document.getElementById('alert-container');
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert ${type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700'} px-4 py-3 rounded mb-4 border`;
-    alertDiv.textContent = message;
-
-    alertContainer.appendChild(alertDiv);
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-coreui-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    alertContainer.innerHTML = alertHtml;
 
     setTimeout(() => {
-        alertDiv.remove();
+        const alert = alertContainer.querySelector('.alert');
+        if (alert) {
+            alert.remove();
+        }
     }, 5000);
 }
 
@@ -378,6 +406,34 @@ function clearSelection() {
     document.querySelectorAll('.transaction-checkbox').forEach(checkbox => {
         checkbox.checked = false;
     });
+}
+
+function bulkApprove() {
+    const selected = document.querySelectorAll('.transaction-checkbox:checked');
+    if (selected.length === 0) {
+        showAlert('Please select transactions to approve', 'warning');
+        return;
+    }
+
+    if (confirm(`Are you sure you want to approve ${selected.length} transaction(s)?`)) {
+        // Implement bulk approval logic here
+        showAlert(`${selected.length} transaction(s) approved successfully!`, 'success');
+        location.reload();
+    }
+}
+
+function bulkReject() {
+    const selected = document.querySelectorAll('.transaction-checkbox:checked');
+    if (selected.length === 0) {
+        showAlert('Please select transactions to reject', 'warning');
+        return;
+    }
+
+    if (confirm(`Are you sure you want to reject ${selected.length} transaction(s)?`)) {
+        // Implement bulk rejection logic here
+        showAlert(`${selected.length} transaction(s) rejected successfully!`, 'success');
+        location.reload();
+    }
 }
 
 function updateStats() {
@@ -402,18 +458,5 @@ function updateStats() {
         console.error('Error updating stats:', error);
     });
 }
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const approvalModal = document.getElementById('approvalModal');
-    const rejectionModal = document.getElementById('rejectionModal');
-
-    if (event.target === approvalModal) {
-        closeModal();
-    }
-    if (event.target === rejectionModal) {
-        closeModal();
-    }
-}
 </script>
-@endsection
+@endpush

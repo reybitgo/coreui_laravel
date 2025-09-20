@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 
-@section('title', '419 - Page Expired')
+@section('title', '403 - Forbidden')
 
 @section('content')
 <div class="min-vh-100 d-flex flex-row align-items-center">
@@ -8,18 +8,18 @@
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="clearfix">
-                    <h1 class="float-start display-3 me-4">419</h1>
-                    <h4 class="pt-3">Page Expired</h4>
-                    <p class="text-body-secondary">Your session has expired due to inactivity.</p>
+                    <h1 class="float-start display-3 me-4">403</h1>
+                    <h4 class="pt-3">Access Forbidden</h4>
+                    <p class="text-body-secondary">You don't have permission to access this resource.</p>
                 </div>
 
-                <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+                <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
                     <svg class="icon me-3">
-                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-clock') }}"></use>
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-ban') }}"></use>
                     </svg>
                     <div>
-                        <strong>Session Timeout</strong><br>
-                        Your session token has expired for security reasons. This usually happens when the page has been idle for too long.
+                        <strong>Access Denied</strong><br>
+                        You do not have sufficient privileges to access this page or perform this action.
                     </div>
                 </div>
 
@@ -29,9 +29,9 @@
                     </svg>
                     <div>
                         <strong>What you can do:</strong><br>
-                        • Refresh the page to get a new session<br>
-                        • Go back and try again<br>
-                        • Return to dashboard to continue
+                        • Contact your administrator for access<br>
+                        • Return to dashboard<br>
+                        • Check if you're logged in with the correct account
                     </div>
                 </div>
 
@@ -48,16 +48,9 @@
                             <svg class="icon me-2">
                                 <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-account-logout') }}"></use>
                             </svg>
-                            Sign In Again
+                            Sign In
                         </a>
                     @endauth
-
-                    <button onclick="window.location.reload()" class="btn btn-warning">
-                        <svg class="icon me-2">
-                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-reload') }}"></use>
-                        </svg>
-                        Refresh Page
-                    </button>
 
                     <button onclick="window.history.back()" class="btn btn-outline-secondary">
                         <svg class="icon me-2">
@@ -69,7 +62,7 @@
 
                 <div class="mt-4 text-center">
                     <small class="text-body-secondary">
-                        If this problem persists, please contact support or try logging out and back in.
+                        If you believe this is an error, please contact your system administrator.
                     </small>
                 </div>
             </div>

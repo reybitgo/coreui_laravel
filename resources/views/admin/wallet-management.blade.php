@@ -1,270 +1,239 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'Wallet Management')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="bg-white overflow-hidden shadow rounded-lg mb-8">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Wallet Management</h1>
-                        <p class="mt-1 text-sm text-gray-600">Monitor and manage user e-wallets</p>
-                    </div>
-                    <a href="{{ route('admin.dashboard') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm">
-                        Back to Dashboard
-                    </a>
-                </div>
+<!-- Page Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="card-title mb-0">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wallet') }}"></use>
+                    </svg>
+                    Wallet Management
+                </h4>
+                <p class="text-body-secondary mb-0">Monitor and manage user e-wallets</p>
+            </div>
+            <div>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-arrow-left') }}"></use>
+                    </svg>
+                    Back to Dashboard
+                </a>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Wallet Overview Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Total Wallet Balance</dt>
-                                <dd class="text-lg font-medium text-gray-900">${{ number_format($totalBalance, 2) }}</dd>
-                            </dl>
-                        </div>
-                    </div>
+<!-- Wallet Overview Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-success-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">${{ number_format($totalBalance, 2) }}</div>
+                    <div>Total Wallet Balance</div>
                 </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Today's Deposits</dt>
-                                <dd class="text-lg font-medium text-gray-900">${{ number_format($todayDeposits, 2) }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Today's Withdrawals</dt>
-                                <dd class="text-lg font-medium text-gray-900">${{ number_format($todayWithdrawals, 2) }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                            </svg>
-                        </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Pending Transactions</dt>
-                                <dd class="text-lg font-medium text-gray-900">{{ $pendingTransactions }}</dd>
-                            </dl>
-                        </div>
-                    </div>
-                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wallet') }}"></use>
+                </svg>
             </div>
         </div>
+    </div>
 
-        <!-- User Wallets Table -->
-        <div class="bg-white shadow overflow-hidden sm:rounded-md mb-8">
-            <div class="px-4 py-5 sm:px-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">User Wallets</h3>
-                <p class="mt-1 max-w-2xl text-sm text-gray-500">
-                    Overview of all member wallet balances and activity.
-                </p>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-primary-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">{{ $todayDeposits ?? 0 }}</div>
+                    <div>Today's Deposits</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-plus') }}"></use>
+                </svg>
             </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-danger-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">${{ number_format($todayWithdrawals ?? 0, 2) }}</div>
+                    <div>Today's Withdrawals</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-minus') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-warning-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">{{ $pendingTransactions ?? 0 }}</div>
+                    <div>Pending Transactions</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-clock') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Wallets Table -->
+<div class="card mb-4">
+    <div class="card-header">
+        <svg class="icon me-2">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-people') }}"></use>
+        </svg>
+        <strong>User Wallets</strong>
+        <small class="text-body-secondary ms-auto">Overview of all member wallet balances and activity.</small>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">User</th>
+                        <th scope="col">Balance</th>
+                        <th scope="col">Last Transaction</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($wallets as $user)
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                User
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Balance
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Last Transaction
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                            </th>
-                            <th scope="col" class="relative px-6 py-3">
-                                <span class="sr-only">Actions</span>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($wallets as $user)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-10 w-10">
-                                            <div class="h-10 w-10 rounded-full @if($user->wallet && $user->wallet->is_active) bg-blue-100 @else bg-red-100 @endif flex items-center justify-center">
-                                                <span class="text-sm font-medium @if($user->wallet && $user->wallet->is_active) text-blue-600 @else text-red-600 @endif">
-                                                    {{ strtoupper(substr($user->fullname, 0, 2)) }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $user->fullname }}</div>
-                                            <div class="text-sm text-gray-500">{{ $user->email }}</div>
-                                        </div>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3 {{ $user->wallet && $user->wallet->is_active ? 'bg-primary' : 'bg-danger' }}">
+                                        <span class="text-white">{{ strtoupper(substr($user->fullname ?? $user->username, 0, 2)) }}</span>
                                     </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        ${{ number_format($user->wallet ? $user->wallet->balance : 0, 2) }}
-                                    </div>
-                                    @if($user->wallet && $user->wallet->last_transaction_at)
-                                        <div class="text-sm text-gray-500">Last activity: {{ $user->wallet->last_transaction_at->diffForHumans() }}</div>
-                                    @else
-                                        <div class="text-sm text-gray-500">No activity</div>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($user->transactions->isNotEmpty())
-                                        @php $lastTransaction = $user->transactions->first(); @endphp
-                                        <div class="text-sm text-gray-900">
-                                            {{ ucfirst($lastTransaction->type) }}:
-                                            {{ $lastTransaction->type === 'deposit' ? '+' : '-' }}${{ number_format($lastTransaction->amount, 2) }}
-                                        </div>
-                                        <div class="text-sm text-gray-500">{{ $lastTransaction->created_at->diffForHumans() }}</div>
-                                    @else
-                                        <div class="text-sm text-gray-500">No transactions</div>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($user->wallet)
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            @if($user->wallet->is_active) bg-green-100 text-green-800 @else bg-red-100 text-red-800 @endif">
-                                            {{ $user->wallet->is_active ? 'Active' : 'Frozen' }}
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            No Wallet
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div class="flex justify-end space-x-2">
-                                        <button class="text-indigo-600 hover:text-indigo-900 text-sm">View</button>
-                                        @if($user->wallet)
-                                            @if($user->wallet->is_active)
-                                                <button class="text-yellow-600 hover:text-yellow-900 text-sm">Freeze</button>
-                                            @else
-                                                <button class="text-green-600 hover:text-green-900 text-sm">Unfreeze</button>
-                                            @endif
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                                    No wallets found
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            @if($wallets->hasPages())
-                <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                    {{ $wallets->links() }}
-                </div>
-            @endif
-        </div>
-
-        <!-- Recent Transactions -->
-        <div class="bg-white shadow overflow-hidden sm:rounded-md">
-            <div class="px-4 py-5 sm:px-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Transactions</h3>
-                <p class="mt-1 max-w-2xl text-sm text-gray-500">
-                    Latest wallet transactions across all users.
-                </p>
-            </div>
-            <ul class="divide-y divide-gray-200">
-                @forelse($recentTransactions as $transaction)
-                    <li class="px-4 py-4 sm:px-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="h-8 w-8 @if($transaction->type === 'deposit') bg-green-100 @elseif($transaction->type === 'withdrawal') bg-red-100 @else bg-blue-100 @endif rounded-full flex items-center justify-center">
-                                        @if($transaction->type === 'deposit')
-                                            <svg class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                            </svg>
-                                        @elseif($transaction->type === 'withdrawal')
-                                            <svg class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                                            </svg>
-                                        @else
-                                            <svg class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                                            </svg>
-                                        @endif
+                                    <div>
+                                        <div class="fw-semibold">{{ $user->fullname ?? $user->username }}</div>
+                                        <div class="text-body-secondary">{{ $user->email }}</div>
                                     </div>
                                 </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        {{ ucfirst($transaction->type) }} by {{ $transaction->user->fullname }}
+                            </td>
+                            <td>
+                                <div class="fw-semibold">${{ number_format($user->wallet ? $user->wallet->balance : 0, 2) }}</div>
+                                @if($user->wallet && isset($user->wallet->last_transaction_at))
+                                    <div class="text-body-secondary">Last activity: {{ $user->wallet->last_transaction_at->diffForHumans() }}</div>
+                                @else
+                                    <div class="text-body-secondary">No activity</div>
+                                @endif
+                            </td>
+                            <td>
+                                @if(isset($user->transactions) && $user->transactions->isNotEmpty())
+                                    @php $lastTransaction = $user->transactions->first(); @endphp
+                                    <div class="fw-semibold">
+                                        {{ ucfirst($lastTransaction->type) }}:
+                                        {{ $lastTransaction->type === 'deposit' ? '+' : '-' }}${{ number_format($lastTransaction->amount, 2) }}
                                     </div>
-                                    <div class="text-sm text-gray-500">
-                                        {{ ucfirst($transaction->payment_method) }} • {{ $transaction->created_at->diffForHumans() }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="text-right">
-                                    <div class="text-sm font-medium @if($transaction->type === 'deposit') text-green-600 @else text-red-600 @endif">
-                                        {{ $transaction->type === 'deposit' ? '+' : '-' }}${{ number_format($transaction->amount, 2) }}
-                                    </div>
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        @if($transaction->status == 'approved') bg-green-100 text-green-800
-                                        @elseif($transaction->status == 'rejected') bg-red-100 text-red-800
-                                        @elseif($transaction->status == 'pending') bg-yellow-100 text-yellow-800
-                                        @else bg-gray-100 text-gray-800 @endif">
-                                        {{ ucfirst($transaction->status) }}
+                                    <div class="text-body-secondary">{{ $lastTransaction->created_at->diffForHumans() }}</div>
+                                @else
+                                    <div class="text-body-secondary">No transactions</div>
+                                @endif
+                            </td>
+                            <td>
+                                @if($user->wallet)
+                                    <span class="badge {{ $user->wallet->is_active ? 'bg-success' : 'bg-danger' }}">
+                                        {{ $user->wallet->is_active ? 'Active' : 'Frozen' }}
                                     </span>
+                                @else
+                                    <span class="badge bg-secondary">No Wallet</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary">View</button>
+                                    @if($user->wallet)
+                                        @if($user->wallet->is_active)
+                                            <button class="btn btn-sm btn-outline-warning">Freeze</button>
+                                        @else
+                                            <button class="btn btn-sm btn-outline-success">Unfreeze</button>
+                                        @endif
+                                    @endif
                                 </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center text-body-secondary py-4">
+                                No wallets found
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @if(isset($wallets) && $wallets->hasPages())
+        <div class="card-footer">
+            {{ $wallets->links() }}
+        </div>
+    @endif
+</div>
+
+<!-- Recent Transactions -->
+<div class="card">
+    <div class="card-header">
+        <svg class="icon me-2">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-list') }}"></use>
+        </svg>
+        <strong>Recent Transactions</strong>
+        <small class="text-body-secondary ms-auto">Latest wallet transactions across all users.</small>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            @forelse($recentTransactions ?? [] as $transaction)
+                <div class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-3 {{ $transaction->type === 'deposit' ? 'bg-success' : ($transaction->type === 'withdrawal' ? 'bg-danger' : 'bg-primary') }}">
+                            <svg class="icon text-white">
+                                @if($transaction->type === 'deposit')
+                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-plus') }}"></use>
+                                @elseif($transaction->type === 'withdrawal')
+                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-minus') }}"></use>
+                                @else
+                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-swap-horizontal') }}"></use>
+                                @endif
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="fw-semibold">
+                                {{ ucfirst($transaction->type) }} by {{ $transaction->user->fullname ?? $transaction->user->username }}
+                            </div>
+                            <div class="text-body-secondary">
+                                {{ ucfirst($transaction->payment_method ?? 'N/A') }} • {{ $transaction->created_at->diffForHumans() }}
                             </div>
                         </div>
-                    </li>
-                @empty
-                    <li class="px-4 py-6 text-center text-gray-500">
-                        No recent transactions
-                    </li>
-                @endforelse
-            </ul>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-semibold {{ $transaction->type === 'deposit' ? 'text-success' : 'text-danger' }}">
+                            {{ $transaction->type === 'deposit' ? '+' : '-' }}${{ number_format($transaction->amount, 2) }}
+                        </div>
+                        <span class="badge
+                            @if($transaction->status == 'approved') bg-success
+                            @elseif($transaction->status == 'rejected') bg-danger
+                            @elseif($transaction->status == 'pending') bg-warning
+                            @else bg-secondary @endif">
+                            {{ ucfirst($transaction->status) }}
+                        </span>
+                    </div>
+                </div>
+            @empty
+                <div class="list-group-item text-center text-body-secondary py-4">
+                    No recent transactions
+                </div>
+            @endforelse
         </div>
     </div>
 </div>

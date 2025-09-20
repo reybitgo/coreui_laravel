@@ -1,5 +1,6 @@
 {
-  "name": "App",
+  "name": "Gawis iHerbal",
+  "short_name": "Gawis",
   "icons": [
     {
       "src": "/android-icon-36x36.png",

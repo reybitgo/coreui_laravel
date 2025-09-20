@@ -16954,4 +16954,35 @@ select.form-multi-select {
   --cui-footer-bg: var(--cui-body-bg);
 }
 
+/* Theme-based logo visibility */
+/* Default (light theme): hide light logos */
+.logo-light {
+  display: none !important;
+}
+
+/* Dark theme: hide dark logos */
+[data-coreui-theme="dark"] .logo-dark {
+  display: none !important;
+}
+
+/* Dark theme full width: show only full light logo */
+[data-coreui-theme="dark"] .sidebar-brand-full.logo-light {
+  display: block !important;
+}
+
+[data-coreui-theme="dark"] .sidebar-brand-narrow.logo-light {
+  display: none !important;
+}
+
+/* Dark theme narrow width: show only narrow light logo */
+[data-coreui-theme="dark"] .sidebar-narrow .sidebar-brand-full.logo-light,
+[data-coreui-theme="dark"] .sidebar-narrow-unfoldable:not(:hover) .sidebar-brand-full.logo-light {
+  display: none !important;
+}
+
+[data-coreui-theme="dark"] .sidebar-narrow .sidebar-brand-narrow.logo-light,
+[data-coreui-theme="dark"] .sidebar-narrow-unfoldable:not(:hover) .sidebar-brand-narrow.logo-light {
+  display: block !important;
+}
+
 /*# sourceMappingURL=style.css.map */

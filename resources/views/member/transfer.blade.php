@@ -1,215 +1,269 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'Transfer Funds')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-4 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-2xl mx-auto">
-        <!-- Header -->
-        <div class="bg-white overflow-hidden shadow rounded-lg mb-6">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
-                    <div>
-                        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Transfer Funds</h1>
-                        <p class="mt-1 text-sm text-gray-600">Send funds to another user</p>
-                    </div>
-                    <a href="{{ route('dashboard') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded text-sm">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+<!-- Page Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="card-title mb-0">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-swap-horizontal') }}"></use>
+                    </svg>
+                    Transfer Funds
+                </h4>
+                <p class="text-body-secondary mb-0">Send funds to another user</p>
+            </div>
+            <div>
+                <a href="{{ route('dashboard') }}" class="btn btn-secondary">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-arrow-left') }}"></use>
+                    </svg>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Current Balance Card -->
+<div class="row mb-4">
+    <div class="col-md-6 mx-auto">
+        <div class="card bg-success-gradient text-white">
+            <div class="card-body text-center">
+                <h5 class="card-title">Available Balance</h5>
+                <h2 class="display-4 fw-bold">${{ number_format($wallet->balance, 2) }}</h2>
+                <p class="mb-0">
+                    <span class="badge {{ $wallet->is_active ? 'bg-light text-success' : 'bg-danger' }}">
+                        {{ $wallet->is_active ? 'Account Active' : 'Account Frozen' }}
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Recipients -->
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-people') }}"></use>
+                </svg>
+                <strong>Frequent Recipients</strong>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setRecipient('john.doe@example.com')">
+                        <svg class="icon me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-user') }}"></use>
                         </svg>
-                        Back to Dashboard
-                    </a>
+                        John Doe
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setRecipient('jane.smith@example.com')">
+                        <svg class="icon me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-user') }}"></use>
+                        </svg>
+                        Jane Smith
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setRecipient('mike.wilson@example.com')">
+                        <svg class="icon me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-user') }}"></use>
+                        </svg>
+                        Mike Wilson
+                    </button>
+                </div>
+                <div class="text-center mt-2">
+                    <small class="text-body-secondary">Click to quickly select a recipient</small>
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Current Balance Card -->
-        <div class="bg-white overflow-hidden shadow rounded-lg mb-6">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
-                            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Available Balance</dt>
-                            <dd class="text-2xl font-bold text-gray-900">${{ number_format($wallet->balance, 2) }}</dd>
-                        </dl>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            {{ $wallet->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            {{ $wallet->is_active ? 'Active' : 'Frozen' }}
-                        </span>
-                    </div>
+<!-- Quick Amount Buttons -->
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-speedometer') }}"></use>
+                </svg>
+                <strong>Quick Amounts</strong>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    @foreach([10, 25, 50, 100, 250, 500] as $quickAmount)
+                        @if($wallet->balance >= $quickAmount)
+                            <button type="button" class="btn btn-outline-primary" onclick="setAmount({{ $quickAmount }})">
+                                ${{ $quickAmount }}
+                            </button>
+                        @endif
+                    @endforeach
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- Transfer Form -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                @if (session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-                        {{ session('success') }}
-                    </div>
-                @endif
+<!-- Alert Messages -->
+@if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <svg class="icon me-2">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+        </svg>
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-coreui-dismiss="alert"></button>
+    </div>
+@endif
 
-                @if ($errors->any())
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                        <ul class="list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+@if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <svg class="icon me-2">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
+        </svg>
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-coreui-dismiss="alert"></button>
+    </div>
+@endif
 
-                <form method="POST" action="{{ route('wallet.transfer.process') }}">
+<!-- Transfer Form -->
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-swap-horizontal') }}"></use>
+                </svg>
+                <strong>Transfer Form</strong>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('wallet.transfer.process') }}" id="transfer-form">
                     @csrf
-                    <div class="space-y-6">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div>
-                                <label for="recipient_identifier" class="block text-sm font-medium text-gray-700">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="recipient_identifier" class="form-label">
+                                    <svg class="icon me-2">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-envelope-open') }}"></use>
+                                    </svg>
                                     Recipient Email or Username
                                 </label>
-                                <div class="mt-1">
-                                    <input type="text" name="recipient_identifier" id="recipient_identifier"
-                                           class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                           placeholder="recipient@example.com or username" required
-                                           value="{{ old('recipient_identifier') }}">
-                                </div>
-                                <p class="mt-1 text-xs text-gray-500">
+                                <input type="text" name="recipient_identifier" id="recipient_identifier" class="form-control"
+                                       placeholder="recipient@example.com or username" required
+                                       value="{{ old('recipient_identifier') }}">
+                                <div class="form-text">
                                     Enter the email address or username of the recipient
-                                </p>
+                                </div>
                             </div>
+                        </div>
 
-                            <div>
-                                <label for="amount" class="block text-sm font-medium text-gray-700">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">
+                                    <svg class="icon me-2">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-dollar') }}"></use>
+                                    </svg>
                                     Transfer Amount
                                 </label>
-                                <div class="mt-1 relative rounded-md shadow-sm">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">$</span>
-                                    </div>
-                                    <input type="number" name="amount" id="amount"
-                                           class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="amount" id="amount" class="form-control"
                                            placeholder="0.00" min="1" max="{{ min($wallet->balance, 10000) }}" step="0.01" required
                                            value="{{ old('amount') }}">
-                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">USD</span>
-                                    </div>
+                                    <span class="input-group-text">USD</span>
                                 </div>
-                                <p class="mt-1 text-xs text-gray-500">
+                                <div class="form-text">
                                     Minimum: $1.00 | Maximum: ${{ number_format(min($wallet->balance, 10000), 2) }}
-                                </p>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div>
-                            <label for="note" class="block text-sm font-medium text-gray-700">
-                                Transfer Note (Optional)
-                            </label>
-                            <div class="mt-1">
-                                <textarea name="note" id="note" rows="3"
-                                          class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                          placeholder="What's this transfer for?" maxlength="255">{{ old('note') }}</textarea>
+                    <div class="mb-3">
+                        <label for="note" class="form-label">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-notes') }}"></use>
+                            </svg>
+                            Transfer Note (Optional)
+                        </label>
+                        <textarea name="note" id="note" rows="3" class="form-control"
+                                  placeholder="What's this transfer for?" maxlength="255">{{ old('note') }}</textarea>
+                        <div class="form-text">
+                            Add a note to help identify this transfer (optional)
+                        </div>
+                    </div>
+
+                    <!-- Transfer Summary -->
+                    <div id="transfer-fee-info" class="card bg-info-subtle border-info mb-3 d-none">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <svg class="icon me-2">
+                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-calculator') }}"></use>
+                                </svg>
+                                Transfer Summary
+                            </h6>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="text-body-secondary small">Transfer Amount</div>
+                                    <div class="fw-bold" id="transfer-amount-display">$0.00</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-body-secondary small">Transfer Fee</div>
+                                    <div class="fw-bold text-warning" id="transfer-fee-display">$0.00</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-body-secondary small">Total Deducted</div>
+                                    <div class="fw-bold text-primary" id="total-amount-display">$0.00</div>
+                                </div>
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">
-                                Add a note to help identify this transfer (optional)
+                            <hr>
+                            <p class="small mb-0 text-info">
+                                <svg class="icon me-1">
+                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-info') }}"></use>
+                                </svg>
+                                <strong>Note:</strong> Transfer will be processed instantly once confirmed.
                             </p>
                         </div>
+                    </div>
 
-                        <!-- Quick Amount Buttons -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Quick Amounts</label>
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                @foreach([10, 25, 50, 100] as $quickAmount)
-                                    @if($wallet->balance >= $quickAmount)
-                                        <button type="button" onclick="document.getElementById('amount').value = {{ $quickAmount }}"
-                                                class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                            ${{ $quickAmount }}
-                                        </button>
-                                    @endif
-                                @endforeach
-                            </div>
-                        </div>
+                    <!-- Important Information -->
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-warning') }}"></use>
+                            </svg>
+                            Important Information
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Transfers are processed instantly upon confirmation</li>
+                            <li>Please verify the recipient email or username carefully</li>
+                            <li>Transfer fees are deducted from your wallet immediately</li>
+                            <li>Completed transfers cannot be reversed</li>
+                        </ul>
+                    </div>
 
-                        <!-- Transfer Summary -->
-                        <div id="transfer-fee-info" class="bg-blue-50 border border-blue-200 rounded-md p-4 hidden">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-blue-800">
-                                        Transfer Summary
-                                    </h3>
-                                    <div class="mt-2 text-sm text-blue-700">
-                                        <div class="space-y-1">
-                                            <div class="flex justify-between">
-                                                <span>Transfer Amount:</span>
-                                                <span id="transfer-amount-display">$0.00</span>
-                                            </div>
-                                            <div class="flex justify-between">
-                                                <span>Transfer Fee:</span>
-                                                <span id="transfer-fee-display">$0.00</span>
-                                            </div>
-                                            <div class="flex justify-between font-medium border-t border-blue-200 pt-1">
-                                                <span>Total Deducted:</span>
-                                                <span id="total-amount-display">$0.00</span>
-                                            </div>
-                                            <div class="text-xs text-blue-600 mt-2">
-                                                <strong>Note:</strong> Transfer will be processed instantly once confirmed.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Important Information -->
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-yellow-800">
-                                        Important Information
-                                    </h3>
-                                    <div class="mt-2 text-sm text-yellow-700">
-                                        <ul class="list-disc list-inside space-y-1">
-                                            <li>Transfers are processed instantly upon confirmation</li>
-                                            <li>Please verify the recipient email or username carefully</li>
-                                            <li>Transfer fees are deducted from your wallet immediately</li>
-                                            <li>Completed transfers cannot be reversed</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col sm:flex-row gap-3">
-                            <button type="submit"
-                                    class="flex-1 inline-flex items-center justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    {{ !$wallet->is_active || $wallet->balance <= 0 ? 'disabled' : '' }}>
-                                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                                </svg>
-                                Send Transfer
-                            </button>
-                            <a href="{{ route('wallet.transactions') }}"
-                               class="flex-1 sm:flex-initial inline-flex items-center justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                View Transactions
-                            </a>
-                        </div>
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-success btn-lg flex-md-fill"
+                                {{ !$wallet->is_active || $wallet->balance <= 0 ? 'disabled' : '' }}>
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-send') }}"></use>
+                            </svg>
+                            Send Transfer
+                        </button>
+                        <a href="{{ route('wallet.transactions') }}" class="btn btn-outline-secondary">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-list') }}"></use>
+                            </svg>
+                            View Transactions
+                        </a>
                     </div>
                 </form>
             </div>
@@ -222,6 +276,16 @@
 <script>
     // Transfer settings from server
     const transferSettings = @json($transferSettings);
+
+    function setRecipient(email) {
+        document.getElementById('recipient_identifier').value = email;
+        document.getElementById('recipient_identifier').focus();
+    }
+
+    function setAmount(amount) {
+        document.getElementById('amount').value = amount;
+        updateTransferSummary();
+    }
 
     function calculateTransferFee(amount) {
         // These values are loaded from system settings
@@ -260,9 +324,9 @@
             document.getElementById('transfer-amount-display').textContent = '$' + amount.toFixed(2);
             document.getElementById('transfer-fee-display').textContent = '$' + fee.toFixed(2);
             document.getElementById('total-amount-display').textContent = '$' + total.toFixed(2);
-            document.getElementById('transfer-fee-info').classList.remove('hidden');
+            document.getElementById('transfer-fee-info').classList.remove('d-none');
         } else {
-            document.getElementById('transfer-fee-info').classList.add('hidden');
+            document.getElementById('transfer-fee-info').classList.add('d-none');
         }
     }
 
@@ -272,13 +336,6 @@
         amountInput.addEventListener('input', updateTransferSummary);
         amountInput.addEventListener('change', updateTransferSummary);
 
-        // Update quick amount buttons to use the new calculation
-        const quickButtons = document.querySelectorAll('[onclick*="document.getElementById(\'amount\').value"]');
-        quickButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                setTimeout(updateTransferSummary, 100); // Small delay to ensure value is set
-            });
-        });
     });
 </script>
 @endpush

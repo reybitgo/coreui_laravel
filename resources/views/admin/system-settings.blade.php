@@ -1,530 +1,431 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'System Settings')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="bg-white overflow-hidden shadow rounded-lg mb-8">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">System Settings</h1>
-                        <p class="mt-1 text-sm text-gray-600">Configure system parameters and security settings</p>
-                    </div>
-                    <a href="{{ route('admin.dashboard') }}" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm">
-                        Back to Dashboard
+<!-- Page Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="card-title mb-0">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-settings') }}"></use>
+                    </svg>
+                    System Settings
+                </h4>
+                <p class="text-body-secondary mb-0">Configure system parameters and security settings</p>
+            </div>
+            <div>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-arrow-left') }}"></use>
+                    </svg>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Navigation Menu -->
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-header">
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-list') }}"></use>
+                </svg>
+                <strong>Settings Categories</strong>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a href="#general" onclick="showSection('general')" class="settings-nav-item list-group-item list-group-item-action active">
+                        <svg class="icon me-3">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-settings') }}"></use>
+                        </svg>
+                        General Settings
+                    </a>
+                    <a href="#security" onclick="showSection('security')" class="settings-nav-item list-group-item list-group-item-action">
+                        <svg class="icon me-3">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-shield-alt') }}"></use>
+                        </svg>
+                        Security
+                    </a>
+                    <a href="#wallet" onclick="showSection('wallet')" class="settings-nav-item list-group-item list-group-item-action">
+                        <svg class="icon me-3">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wallet') }}"></use>
+                        </svg>
+                        Wallet Settings
+                    </a>
+                    <a href="#notifications" onclick="showSection('notifications')" class="settings-nav-item list-group-item list-group-item-action">
+                        <svg class="icon me-3">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-bell') }}"></use>
+                        </svg>
+                        Notifications
+                    </a>
+                    <a href="#maintenance" onclick="showSection('maintenance')" class="settings-nav-item list-group-item list-group-item-action">
+                        <svg class="icon me-3">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wrench') }}"></use>
+                        </svg>
+                        Maintenance
                     </a>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Navigation Menu -->
-            <div class="lg:col-span-1">
-                <div class="bg-white shadow rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Settings Categories</h3>
-                        <nav class="space-y-1">
-                            <a href="#general" onclick="showSection('general')" class="settings-nav-item active bg-indigo-50 text-indigo-700 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                                <svg class="text-indigo-500 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                General Settings
-                            </a>
-                            <a href="#security" onclick="showSection('security')" class="settings-nav-item text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                                <svg class="text-gray-400 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                                Security
-                            </a>
-                            <a href="#wallet" onclick="showSection('wallet')" class="settings-nav-item text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                                <svg class="text-gray-400 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                Wallet Settings
-                            </a>
-                            <a href="#notifications" onclick="showSection('notifications')" class="settings-nav-item text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                                <svg class="text-gray-400 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4 5h16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2z" />
-                                </svg>
-                                Notifications
-                            </a>
-                            <a href="#maintenance" onclick="showSection('maintenance')" class="settings-nav-item text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                                <svg class="text-gray-400 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                Maintenance
-                            </a>
-                        </nav>
+    <!-- Settings Content -->
+    <div class="col-lg-9">
+        <!-- General Settings -->
+        <div id="general-section" class="settings-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-info') }}"></use>
+                    </svg>
+                    <strong>System Information</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="card bg-primary-subtle border-primary">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-primary">Laravel Version</h6>
+                                    <h4 class="text-primary">{{ $systemStats['laravel_version'] }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-success-subtle border-success">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-success">PHP Version</h6>
+                                    <h4 class="text-success">{{ $systemStats['php_version'] }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-info-subtle border-info">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-info">Database Size</h6>
+                                    <h4 class="text-info">{{ $systemStats['database_size'] }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-warning-subtle border-warning">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-warning">Total Users</h6>
+                                    <h4 class="text-warning">{{ $systemStats['total_users'] }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-danger-subtle border-danger">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-danger">Total Transactions</h6>
+                                    <h4 class="text-danger">{{ $systemStats['total_transactions'] }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-secondary-subtle border-secondary">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-secondary">Storage Available</h6>
+                                    <h4 class="text-secondary">{{ $systemStats['storage_used'] }}</h4>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Settings Content -->
-            <div class="lg:col-span-2">
-                <!-- General Settings -->
-                <div id="general-section" class="settings-section">
-                    <div class="bg-white shadow rounded-lg mb-6">
-                        <div class="px-4 py-5 sm:p-6">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">System Information</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <h4 class="text-sm font-medium text-gray-900">Laravel Version</h4>
-                                    <p class="text-2xl font-bold text-indigo-600">{{ $systemStats['laravel_version'] }}</p>
-                                </div>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <h4 class="text-sm font-medium text-gray-900">PHP Version</h4>
-                                    <p class="text-2xl font-bold text-green-600">{{ $systemStats['php_version'] }}</p>
-                                </div>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <h4 class="text-sm font-medium text-gray-900">Database Size</h4>
-                                    <p class="text-2xl font-bold text-blue-600">{{ $systemStats['database_size'] }}</p>
-                                </div>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <h4 class="text-sm font-medium text-gray-900">Total Users</h4>
-                                    <p class="text-2xl font-bold text-purple-600">{{ $systemStats['total_users'] }}</p>
-                                </div>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <h4 class="text-sm font-medium text-gray-900">Total Transactions</h4>
-                                    <p class="text-2xl font-bold text-red-600">{{ $systemStats['total_transactions'] }}</p>
-                                </div>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <h4 class="text-sm font-medium text-gray-900">Storage Available</h4>
-                                    <p class="text-2xl font-bold text-yellow-600">{{ $systemStats['storage_used'] }}</p>
-                                </div>
+            <div class="card">
+                <div class="card-header">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-settings') }}"></use>
+                    </svg>
+                    <strong>General Settings</strong>
+                </div>
+                <div class="card-body">
+                    <form>
+                        @csrf
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="app_name" class="form-label">Application Name</label>
+                                <input type="text" id="app_name" name="app_name" value="E-Wallet System" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="app_url" class="form-label">Application URL</label>
+                                <input type="url" id="app_url" name="app_url" value="http://127.0.0.1:8000" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="app_description" class="form-label">Application Description</label>
+                            <textarea id="app_description" name="app_description" rows="3" class="form-control">Secure digital wallet platform for financial transactions</textarea>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="timezone" class="form-label">System Timezone</label>
+                                <select id="timezone" name="timezone" class="form-select">
+                                    <option value="UTC" selected>UTC</option>
+                                    <option value="America/New_York">Eastern Time</option>
+                                    <option value="America/Chicago">Central Time</option>
+                                    <option value="America/Denver">Mountain Time</option>
+                                    <option value="America/Los_Angeles">Pacific Time</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="language" class="form-label">Default Language</label>
+                                <select id="language" name="language" class="form-select">
+                                    <option value="en" selected>English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" onclick="saveSettings('general')" class="btn btn-primary">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-save') }}"></use>
+                            </svg>
+                            Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div id="security-section" class="settings-section d-none">
+            <div class="card">
+                <div class="card-header">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-shield-alt') }}"></use>
+                    </svg>
+                    <strong>Security Settings</strong>
+                </div>
+                <div class="card-body">
+                    <form>
+                        @csrf
+                        <div class="mb-4">
+                            <h6 class="mb-3">Authentication Settings</h6>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="require_2fa" name="require_2fa"
+                                    {{ isset($settings['require_2fa']) && $settings['require_2fa']->value ? 'checked' : '' }}>
+                                <label class="form-check-label" for="require_2fa">
+                                    <strong>Require Two-Factor Authentication</strong>
+                                    <div class="text-body-secondary small">Force all users to enable 2FA for enhanced security</div>
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="email_verification_enabled" name="email_verification_enabled"
+                                    {{ isset($settings['email_verification_enabled']) && $settings['email_verification_enabled']->value ? 'checked' : '' }}>
+                                <label class="form-check-label" for="email_verification_enabled">
+                                    <strong>Email Verification Required</strong>
+                                    <div class="text-body-secondary small">When disabled, users can login without verifying their email address</div>
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="session_timeout" name="session_timeout" checked>
+                                <label class="form-check-label" for="session_timeout">
+                                    <strong>Automatic Session Timeout</strong>
+                                    <div class="text-body-secondary small">Sessions expire after 120 minutes of inactivity</div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="max_login_attempts" class="form-label">Max Login Attempts</label>
+                                <input type="number" id="max_login_attempts" name="max_login_attempts" value="3" min="1" max="10" class="form-control">
+                                <div class="form-text">Account locked after this many failed attempts</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lockout_duration" class="form-label">Lockout Duration (minutes)</label>
+                                <input type="number" id="lockout_duration" name="lockout_duration" value="15" min="1" max="1440" class="form-control">
+                                <div class="form-text">How long accounts remain locked</div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="saveSettings('security')" class="btn btn-primary">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-save') }}"></use>
+                            </svg>
+                            Update Security Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wallet Settings -->
+        <div id="wallet-section" class="settings-section d-none">
+            <div class="card">
+                <div class="card-header">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wallet') }}"></use>
+                    </svg>
+                    <strong>Wallet Settings</strong>
+                </div>
+                <div class="card-body">
+                    <form>
+                        @csrf
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="min_deposit" class="form-label">Minimum Deposit Amount ($)</label>
+                                <input type="number" id="min_deposit" name="min_deposit" value="1.00" min="0" step="0.01" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="max_deposit" class="form-label">Maximum Deposit Amount ($)</label>
+                                <input type="number" id="max_deposit" name="max_deposit" value="10000.00" min="1" step="0.01" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="min_withdrawal" class="form-label">Minimum Withdrawal Amount ($)</label>
+                                <input type="number" id="min_withdrawal" name="min_withdrawal" value="1.00" min="0" step="0.01" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="max_withdrawal" class="form-label">Maximum Withdrawal Amount ($)</label>
+                                <input type="number" id="max_withdrawal" name="max_withdrawal" value="10000.00" min="1" step="0.01" class="form-control">
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <h6 class="mb-3">Fee Configuration</h6>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="withdrawal_fee_enabled" name="withdrawal_fee_enabled"
+                                {{ isset($settings['withdrawal_fee_enabled']) && $settings['withdrawal_fee_enabled']->value ? 'checked' : '' }}>
+                            <label class="form-check-label" for="withdrawal_fee_enabled">
+                                <strong>Enable Withdrawal Fees</strong>
+                                <div class="text-body-secondary small">Charge fees for withdrawal transactions</div>
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="transfer_fee_enabled" name="transfer_fee_enabled"
+                                {{ isset($settings['transfer_charge_enabled']) && $settings['transfer_charge_enabled']->value ? 'checked' : '' }}>
+                            <label class="form-check-label" for="transfer_fee_enabled">
+                                <strong>Enable Transfer Fees</strong>
+                                <div class="text-body-secondary small">Charge fees for fund transfers between users</div>
+                            </label>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">Transaction Approval Policy</h6>
+                            <ul class="mb-0">
+                                <li><strong>Withdrawals:</strong> Always require manual admin approval</li>
+                                <li><strong>Deposits:</strong> Always require manual admin approval</li>
+                                <li><strong>Transfers:</strong> Process automatically (user-to-user transfers)</li>
+                            </ul>
+                        </div>
+
+                        <button type="button" onclick="saveSettings('wallet')" class="btn btn-primary">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-save') }}"></use>
+                            </svg>
+                            Save Wallet Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Settings -->
+        <div id="notifications-section" class="settings-section d-none">
+            <div class="card">
+                <div class="card-header">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-bell') }}"></use>
+                    </svg>
+                    <strong>Notification Settings</strong>
+                </div>
+                <div class="card-body">
+                    <form>
+                        @csrf
+                        <h6 class="mb-3">Email Notifications</h6>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="notify_new_user" name="notify_new_user" checked>
+                            <label class="form-check-label" for="notify_new_user">
+                                <strong>New User Registration</strong>
+                                <div class="text-body-secondary small">Notify admins when new users register</div>
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="notify_large_transaction" name="notify_large_transaction" checked>
+                            <label class="form-check-label" for="notify_large_transaction">
+                                <strong>Large Transactions</strong>
+                                <div class="text-body-secondary small">Notify admins of transactions over the review threshold</div>
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="notify_suspicious" name="notify_suspicious" checked>
+                            <label class="form-check-label" for="notify_suspicious">
+                                <strong>Suspicious Activity</strong>
+                                <div class="text-body-secondary small">Immediate alerts for flagged transactions</div>
+                            </label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="admin_email" class="form-label">Admin Email Address</label>
+                            <input type="email" id="admin_email" name="admin_email" value="admin@example.com" class="form-control">
+                            <div class="form-text">Primary email for system notifications</div>
+                        </div>
+                        <button type="button" onclick="saveSettings('notifications')" class="btn btn-primary">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-save') }}"></use>
+                            </svg>
+                            Save Notification Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance Settings -->
+        <div id="maintenance-section" class="settings-section d-none">
+            <div class="card">
+                <div class="card-header">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wrench') }}"></use>
+                    </svg>
+                    <strong>Maintenance Settings</strong>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">Maintenance Mode</h6>
+                        <p class="mb-3">System is currently operational. Use maintenance mode for scheduled updates.</p>
+                        <button type="button" onclick="toggleMaintenanceMode()" class="btn btn-warning">
+                            Enable Maintenance Mode
+                        </button>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading">Database Backup</h6>
+                                <p class="mb-3">Last backup: 2 hours ago</p>
+                                <button type="button" onclick="createBackup()" class="btn btn-info">
+                                    Create Backup Now
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-success">
+                                <h6 class="alert-heading">Cache Management</h6>
+                                <p class="mb-3">System cache status: Active</p>
+                                <button type="button" onclick="clearCache()" class="btn btn-success">
+                                    Clear All Caches
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white shadow rounded-lg">
-                        <div class="px-4 py-5 sm:p-6">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">General Settings</h3>
-                            <form class="space-y-6">
-                                @csrf
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="app_name" class="block text-sm font-medium text-gray-700">Application Name</label>
-                                        <input type="text" id="app_name" name="app_name" value="E-Wallet System"
-                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                    </div>
-                                    <div>
-                                        <label for="app_url" class="block text-sm font-medium text-gray-700">Application URL</label>
-                                        <input type="url" id="app_url" name="app_url" value="http://127.0.0.1:8000"
-                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="app_description" class="block text-sm font-medium text-gray-700">Application Description</label>
-                                    <textarea id="app_description" name="app_description" rows="3"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">Secure digital wallet platform for financial transactions</textarea>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="timezone" class="block text-sm font-medium text-gray-700">System Timezone</label>
-                                        <select id="timezone" name="timezone"
-                                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                            <option value="UTC" selected>UTC</option>
-                                            <option value="America/New_York">Eastern Time</option>
-                                            <option value="America/Chicago">Central Time</option>
-                                            <option value="America/Denver">Mountain Time</option>
-                                            <option value="America/Los_Angeles">Pacific Time</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label for="language" class="block text-sm font-medium text-gray-700">Default Language</label>
-                                        <select id="language" name="language"
-                                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                            <option value="en" selected>English</option>
-                                            <option value="es">Spanish</option>
-                                            <option value="fr">French</option>
-                                            <option value="de">German</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="pt-5">
-                                    <button type="button" onclick="saveSettings('general')"
-                                        class="bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-indigo-700">
-                                        Save Changes
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Security Settings -->
-                <div id="security-section" class="settings-section hidden">
-                    <div class="bg-white shadow rounded-lg">
-                        <div class="px-4 py-5 sm:p-6">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Security Settings</h3>
-                            <form class="space-y-6">
-                                @csrf
-                                <div class="space-y-4">
-                                    <div class="flex items-start">
-                                        <div class="flex items-center h-5">
-                                            <input id="require_2fa" name="require_2fa" type="checkbox"
-                                                {{ isset($settings['require_2fa']) && $settings['require_2fa']->value ? 'checked' : '' }}
-                                                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                        </div>
-                                        <div class="ml-3 text-sm">
-                                            <label for="require_2fa" class="font-medium text-gray-700">Require Two-Factor Authentication</label>
-                                            <p class="text-gray-500">Force all users to enable 2FA for enhanced security</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-start">
-                                        <div class="flex items-center h-5">
-                                            <input id="email_verification_enabled" name="email_verification_enabled" type="checkbox"
-                                                {{ isset($settings['email_verification_enabled']) && $settings['email_verification_enabled']->value ? 'checked' : '' }}
-                                                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                        </div>
-                                        <div class="ml-3 text-sm">
-                                            <label for="email_verification_enabled" class="font-medium text-gray-700">Email Verification Required</label>
-                                            <p class="text-gray-500">When disabled, users can login without verifying their email address</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="space-y-4">
-                                    <div class="flex items-start">
-                                        <div class="flex items-center h-5">
-                                            <input id="session_timeout" name="session_timeout" type="checkbox" checked
-                                                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                        </div>
-                                        <div class="ml-3 text-sm">
-                                            <label for="session_timeout" class="font-medium text-gray-700">Automatic Session Timeout</label>
-                                            <p class="text-gray-500">Sessions expire after 120 minutes of inactivity</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="max_login_attempts" class="block text-sm font-medium text-gray-700">Max Login Attempts</label>
-                                        <input type="number" id="max_login_attempts" name="max_login_attempts" value="3" min="1" max="10"
-                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                        <p class="mt-1 text-xs text-gray-500">Account locked after this many failed attempts</p>
-                                    </div>
-                                    <div>
-                                        <label for="lockout_duration" class="block text-sm font-medium text-gray-700">Lockout Duration (minutes)</label>
-                                        <input type="number" id="lockout_duration" name="lockout_duration" value="15" min="1" max="1440"
-                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                        <p class="mt-1 text-xs text-gray-500">How long accounts remain locked</p>
-                                    </div>
-                                </div>
-                                <div class="pt-5">
-                                    <button type="button" onclick="saveSettings('security')"
-                                        class="bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-indigo-700">
-                                        Update Security Settings
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Wallet Settings -->
-                <div id="wallet-section" class="settings-section hidden">
-                    <div class="bg-white shadow rounded-lg">
-                        <div class="px-4 py-5 sm:p-6">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Wallet Settings</h3>
-                            <form class="space-y-6">
-                                @csrf
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="min_deposit" class="block text-sm font-medium text-gray-700">Minimum Deposit Amount ($)</label>
-                                        <input type="number" id="min_deposit" name="min_deposit" value="1.00" min="0" step="0.01"
-                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                    </div>
-                                    <div>
-                                        <label for="max_deposit" class="block text-sm font-medium text-gray-700">Maximum Deposit Amount ($)</label>
-                                        <input type="number" id="max_deposit" name="max_deposit" value="10000.00" min="1" step="0.01"
-                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="min_withdrawal" class="block text-sm font-medium text-gray-700">Minimum Withdrawal Amount ($)</label>
-                                        <input type="number" id="min_withdrawal" name="min_withdrawal" value="1.00" min="0" step="0.01"
-                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                    </div>
-                                    <div>
-                                        <label for="max_withdrawal" class="block text-sm font-medium text-gray-700">Maximum Withdrawal Amount ($)</label>
-                                        <input type="number" id="max_withdrawal" name="max_withdrawal" value="10000.00" min="1" step="0.01"
-                                            class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                    </div>
-                                </div>
-                                <!-- Withdrawal Fee Settings -->
-                                <fieldset class="border-t border-gray-200 pt-6">
-                                    <legend class="text-base font-medium text-gray-900 mb-4">Withdrawal Fee Settings</legend>
-                                    <div class="space-y-4">
-                                        <div class="flex items-start">
-                                            <div class="flex items-center h-5">
-                                                <input id="withdrawal_fee_enabled" name="withdrawal_fee_enabled" type="checkbox"
-                                                    {{ isset($settings['withdrawal_fee_enabled']) && $settings['withdrawal_fee_enabled']->value ? 'checked' : '' }}
-                                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                            </div>
-                                            <div class="ml-3 text-sm">
-                                                <label for="withdrawal_fee_enabled" class="font-medium text-gray-700">Enable Withdrawal Fees</label>
-                                                <p class="text-gray-500">Charge fees for withdrawal transactions</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="ml-8 space-y-4" id="withdrawal_fee_settings">
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <label for="withdrawal_fee_type" class="block text-sm font-medium text-gray-700">Fee Type</label>
-                                                    <select id="withdrawal_fee_type" name="withdrawal_fee_type"
-                                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                                        <option value="percentage" {{ isset($settings['withdrawal_fee_type']) && $settings['withdrawal_fee_type']->value === 'percentage' ? 'selected' : '' }}>Percentage</option>
-                                                        <option value="fixed" {{ isset($settings['withdrawal_fee_type']) && $settings['withdrawal_fee_type']->value === 'fixed' ? 'selected' : '' }}>Fixed Amount</option>
-                                                    </select>
-                                                </div>
-                                                <div>
-                                                    <label for="withdrawal_fee_value" class="block text-sm font-medium text-gray-700">Fee Value</label>
-                                                    <input type="number" id="withdrawal_fee_value" name="withdrawal_fee_value" step="0.01" min="0"
-                                                        value="{{ isset($settings['withdrawal_fee_value']) ? $settings['withdrawal_fee_value']->value : '2.5' }}"
-                                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                                </div>
-                                            </div>
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <label for="withdrawal_minimum_fee" class="block text-sm font-medium text-gray-700">Minimum Fee ($)</label>
-                                                    <input type="number" id="withdrawal_minimum_fee" name="withdrawal_minimum_fee" step="0.01" min="0"
-                                                        value="{{ isset($settings['withdrawal_minimum_fee']) ? $settings['withdrawal_minimum_fee']->value : '1.00' }}"
-                                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                                </div>
-                                                <div>
-                                                    <label for="withdrawal_maximum_fee" class="block text-sm font-medium text-gray-700">Maximum Fee ($)</label>
-                                                    <input type="number" id="withdrawal_maximum_fee" name="withdrawal_maximum_fee" step="0.01" min="0"
-                                                        value="{{ isset($settings['withdrawal_maximum_fee']) ? $settings['withdrawal_maximum_fee']->value : '50.00' }}"
-                                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </fieldset>
-
-                                <!-- Transfer Fee Settings -->
-                                <fieldset class="border-t border-gray-200 pt-6">
-                                    <legend class="text-base font-medium text-gray-900 mb-4">Transfer Fee Settings</legend>
-                                    <div class="space-y-4">
-                                        <div class="flex items-start">
-                                            <div class="flex items-center h-5">
-                                                <input id="transfer_fee_enabled" name="transfer_fee_enabled" type="checkbox"
-                                                    {{ isset($settings['transfer_charge_enabled']) && $settings['transfer_charge_enabled']->value ? 'checked' : '' }}
-                                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                            </div>
-                                            <div class="ml-3 text-sm">
-                                                <label for="transfer_fee_enabled" class="font-medium text-gray-700">Enable Transfer Fees</label>
-                                                <p class="text-gray-500">Charge fees for fund transfers between users</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="ml-8 space-y-4" id="transfer_fee_settings">
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <label for="transfer_fee_type" class="block text-sm font-medium text-gray-700">Fee Type</label>
-                                                    <select id="transfer_fee_type" name="transfer_fee_type"
-                                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                                        <option value="percentage" {{ isset($settings['transfer_charge_type']) && $settings['transfer_charge_type']->value === 'percentage' ? 'selected' : '' }}>Percentage</option>
-                                                        <option value="fixed" {{ isset($settings['transfer_charge_type']) && $settings['transfer_charge_type']->value === 'fixed' ? 'selected' : '' }}>Fixed Amount</option>
-                                                    </select>
-                                                </div>
-                                                <div>
-                                                    <label for="transfer_fee_value" class="block text-sm font-medium text-gray-700">Fee Value</label>
-                                                    <input type="number" id="transfer_fee_value" name="transfer_fee_value" step="0.01" min="0"
-                                                        value="{{ isset($settings['transfer_charge_value']) ? $settings['transfer_charge_value']->value : '1.5' }}"
-                                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                                </div>
-                                            </div>
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <label for="transfer_minimum_fee" class="block text-sm font-medium text-gray-700">Minimum Fee ($)</label>
-                                                    <input type="number" id="transfer_minimum_fee" name="transfer_minimum_fee" step="0.01" min="0"
-                                                        value="{{ isset($settings['transfer_minimum_charge']) ? $settings['transfer_minimum_charge']->value : '0.50' }}"
-                                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                                </div>
-                                                <div>
-                                                    <label for="transfer_maximum_fee" class="block text-sm font-medium text-gray-700">Maximum Fee ($)</label>
-                                                    <input type="number" id="transfer_maximum_fee" name="transfer_maximum_fee" step="0.01" min="0"
-                                                        value="{{ isset($settings['transfer_maximum_charge']) ? $settings['transfer_maximum_charge']->value : '25.00' }}"
-                                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </fieldset>
-
-                                <!-- Transaction Approval Policy -->
-                                <fieldset class="border-t border-gray-200 pt-6">
-                                    <legend class="text-base font-medium text-gray-900 mb-4">Transaction Approval Policy</legend>
-                                    <div class="bg-gray-50 border border-gray-200 rounded-md p-4">
-                                        <h4 class="text-sm font-medium text-gray-800 mb-3">Current Policy:</h4>
-                                        <ul class="text-sm text-gray-700 space-y-2">
-                                            <li class="flex items-center">
-                                                <svg class="h-4 w-4 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                <strong>Withdrawals:</strong> Always require manual admin approval
-                                            </li>
-                                            <li class="flex items-center">
-                                                <svg class="h-4 w-4 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                <strong>Deposits:</strong> Always require manual admin approval
-                                            </li>
-                                            <li class="flex items-center">
-                                                <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                </svg>
-                                                <strong>Transfers:</strong> Process automatically (user-to-user transfers)
-                                            </li>
-                                        </ul>
-                                        <p class="text-xs text-gray-600 mt-3">
-                                            <strong>Note:</strong> All deposits and withdrawals go through the admin approval queue for security.
-                                        </p>
-                                    </div>
-                                </fieldset>
-                                <div class="pt-5">
-                                    <button type="button" onclick="saveSettings('wallet')"
-                                        class="bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-indigo-700">
-                                        Save Wallet Settings
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Notifications Settings -->
-                <div id="notifications-section" class="settings-section hidden">
-                    <div class="bg-white shadow rounded-lg">
-                        <div class="px-4 py-5 sm:p-6">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Notification Settings</h3>
-                            <form class="space-y-6">
-                                @csrf
-                                <div class="space-y-4">
-                                    <h4 class="text-md font-medium text-gray-900">Email Notifications</h4>
-                                    <div class="space-y-4">
-                                        <div class="flex items-start">
-                                            <div class="flex items-center h-5">
-                                                <input id="notify_new_user" name="notify_new_user" type="checkbox" checked
-                                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                            </div>
-                                            <div class="ml-3 text-sm">
-                                                <label for="notify_new_user" class="font-medium text-gray-700">New User Registration</label>
-                                                <p class="text-gray-500">Notify admins when new users register</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-start">
-                                            <div class="flex items-center h-5">
-                                                <input id="notify_large_transaction" name="notify_large_transaction" type="checkbox" checked
-                                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                            </div>
-                                            <div class="ml-3 text-sm">
-                                                <label for="notify_large_transaction" class="font-medium text-gray-700">Large Transactions</label>
-                                                <p class="text-gray-500">Notify admins of transactions over the review threshold</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-start">
-                                            <div class="flex items-center h-5">
-                                                <input id="notify_suspicious" name="notify_suspicious" type="checkbox" checked
-                                                    class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                            </div>
-                                            <div class="ml-3 text-sm">
-                                                <label for="notify_suspicious" class="font-medium text-gray-700">Suspicious Activity</label>
-                                                <p class="text-gray-500">Immediate alerts for flagged transactions</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="admin_email" class="block text-sm font-medium text-gray-700">Admin Email Address</label>
-                                    <input type="email" id="admin_email" name="admin_email" value="admin@example.com"
-                                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                    <p class="mt-1 text-xs text-gray-500">Primary email for system notifications</p>
-                                </div>
-                                <div class="pt-5">
-                                    <button type="button" onclick="saveSettings('notifications')"
-                                        class="bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-indigo-700">
-                                        Save Notification Settings
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Maintenance Settings -->
-                <div id="maintenance-section" class="settings-section hidden">
-                    <div class="bg-white shadow rounded-lg">
-                        <div class="px-4 py-5 sm:p-6">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-6">Maintenance Settings</h3>
-                            <div class="space-y-6">
-                                <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-                                    <div class="flex">
-                                        <div class="flex-shrink-0">
-                                            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <div class="ml-3">
-                                            <h3 class="text-sm font-medium text-yellow-800">Maintenance Mode</h3>
-                                            <div class="mt-2 text-sm text-yellow-700">
-                                                <p>System is currently operational. Use maintenance mode for scheduled updates.</p>
-                                            </div>
-                                            <div class="mt-4">
-                                                <button type="button" onclick="toggleMaintenanceMode()"
-                                                    class="bg-yellow-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-yellow-700">
-                                                    Enable Maintenance Mode
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-                                        <h4 class="text-sm font-medium text-blue-800 mb-2">Database Backup</h4>
-                                        <p class="text-sm text-blue-700 mb-3">Last backup: 2 hours ago</p>
-                                        <button type="button" onclick="createBackup()"
-                                            class="bg-blue-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-blue-700">
-                                            Create Backup Now
-                                        </button>
-                                    </div>
-                                    <div class="bg-green-50 border border-green-200 rounded-md p-4">
-                                        <h4 class="text-sm font-medium text-green-800 mb-2">Cache Management</h4>
-                                        <p class="text-sm text-green-700 mb-3">System cache status: Active</p>
-                                        <button type="button" onclick="clearCache()"
-                                            class="bg-green-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-green-700">
-                                            Clear All Caches
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="bg-red-50 border border-red-200 rounded-md p-4">
-                                    <div class="flex">
-                                        <div class="flex-shrink-0">
-                                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <div class="ml-3">
-                                            <h3 class="text-sm font-medium text-red-800">Danger Zone</h3>
-                                            <div class="mt-2 text-sm text-red-700">
-                                                <p>These actions are irreversible. Please proceed with caution.</p>
-                                            </div>
-                                            <div class="mt-4 space-x-3">
-                                                <button type="button" onclick="resetSystem()"
-                                                    class="bg-red-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-red-700">
-                                                    Reset System Settings
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="alert alert-danger">
+                        <h6 class="alert-heading">Danger Zone</h6>
+                        <p class="mb-3">These actions are irreversible. Please proceed with caution.</p>
+                        <button type="button" onclick="resetSystem()" class="btn btn-danger">
+                            Reset System Settings
+                        </button>
                     </div>
                 </div>
             </div>
@@ -536,20 +437,18 @@
 function showSection(sectionName) {
     // Hide all sections
     document.querySelectorAll('.settings-section').forEach(section => {
-        section.classList.add('hidden');
+        section.classList.add('d-none');
     });
 
     // Show selected section
-    document.getElementById(sectionName + '-section').classList.remove('hidden');
+    document.getElementById(sectionName + '-section').classList.remove('d-none');
 
     // Update navigation
     document.querySelectorAll('.settings-nav-item').forEach(item => {
-        item.classList.remove('active', 'bg-indigo-50', 'text-indigo-700');
-        item.classList.add('text-gray-600', 'hover:bg-gray-50', 'hover:text-gray-900');
+        item.classList.remove('active');
     });
 
-    event.target.classList.add('active', 'bg-indigo-50', 'text-indigo-700');
-    event.target.classList.remove('text-gray-600', 'hover:bg-gray-50', 'hover:text-gray-900');
+    event.target.classList.add('active');
 }
 
 function saveSettings(category) {
@@ -660,20 +559,27 @@ function resetSystem() {
 }
 
 function showAlert(message, type = 'success') {
-    const alertClass = type === 'success' ? 'bg-green-100 text-green-700 border-green-400' : 'bg-red-100 text-red-700 border-red-400';
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
 
     const alert = document.createElement('div');
-    alert.className = `fixed top-4 right-4 z-50 ${alertClass} border px-4 py-3 rounded shadow-lg max-w-sm`;
+    alert.className = `alert ${alertClass} alert-dismissible fade show shadow position-fixed top-0 end-0 m-3`;
+    alert.style.zIndex = '1060';
     alert.innerHTML = `
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()" class="float-right text-xl leading-none ml-4">&times;</button>
+        <div class="d-flex align-items-center">
+            <svg class="icon me-2">
+                <use xlink:href="${window.location.origin}/coreui-template/vendors/@coreui/icons/svg/free.svg#cil-${type === 'success' ? 'check' : 'x'}"></use>
+            </svg>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
     `;
 
     document.body.appendChild(alert);
 
-    // Auto remove after 5 seconds
     setTimeout(() => {
-        alert.remove();
+        if (alert.parentElement) {
+            alert.remove();
+        }
     }, 5000);
 }
 </script>

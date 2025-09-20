@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Member\WalletController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -15,6 +16,11 @@ Route::get('/test-login', function () {
 
 Route::middleware(['auth', 'conditional.verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Profile Routes
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 });
 
 // Admin Routes
@@ -106,4 +112,31 @@ Route::middleware(['auth', 'conditional.verified'])->prefix('wallet')->name('wal
 
 Route::middleware(['guest'])->group(function () {
     Route::redirect('/home', '/dashboard');
+});
+
+// Temporary routes for testing error pages - Remove in production
+Route::prefix('test')->name('test.')->group(function () {
+    Route::get('/404', function () {
+        abort(404);
+    })->name('404');
+
+    Route::get('/500', function () {
+        abort(500);
+    })->name('500');
+
+    Route::get('/419', function () {
+        abort(419);
+    })->name('419');
+
+    Route::get('/403', function () {
+        abort(403);
+    })->name('403');
+
+    Route::get('/429', function () {
+        abort(429);
+    })->name('429');
+
+    Route::get('/errors', function () {
+        return view('test-errors');
+    })->name('errors');
 });
