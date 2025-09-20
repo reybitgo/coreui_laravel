@@ -108,6 +108,13 @@
                             </div>
 
                             <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="showPassword">
+                                <label class="form-check-label" for="showPassword">
+                                    Show password
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" name="terms" id="terms" required>
                                 <label class="form-check-label" for="terms">
                                     I agree to the <a href="#" class="text-decoration-none" data-coreui-toggle="modal" data-coreui-target="#termsModal">Terms of Service</a>
@@ -116,7 +123,7 @@
                             </div>
 
                             <div class="d-grid">
-                                <button class="btn btn-success" type="submit">Create Account</button>
+                                <button class="btn btn-success" type="submit" id="submitBtn" disabled>Create Account</button>
                             </div>
 
                             <div class="text-center mt-3">
@@ -136,4 +143,39 @@
 <!-- Include Legal Modals -->
 @include('legal.terms-of-service')
 @include('legal.privacy-policy')
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const termsCheckbox = document.getElementById('terms');
+    const submitBtn = document.getElementById('submitBtn');
+    const showPasswordCheckbox = document.getElementById('showPassword');
+    const passwordInput = document.getElementById('password');
+    const passwordConfirmationInput = document.getElementById('password_confirmation');
+
+    // Function to toggle submit button state
+    function toggleSubmitButton() {
+        if (termsCheckbox.checked) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('disabled');
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('disabled');
+        }
+    }
+
+    // Function to toggle password visibility
+    function togglePasswordVisibility() {
+        const inputType = showPasswordCheckbox.checked ? 'text' : 'password';
+        passwordInput.type = inputType;
+        passwordConfirmationInput.type = inputType;
+    }
+
+    // Listen for checkbox changes
+    termsCheckbox.addEventListener('change', toggleSubmitButton);
+    showPasswordCheckbox.addEventListener('change', togglePasswordVisibility);
+
+    // Initial state check
+    toggleSubmitButton();
+});
+</script>
 @endsection

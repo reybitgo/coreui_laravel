@@ -102,6 +102,16 @@
                                    id="password_confirmation" name="password_confirmation" required>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="showPasswords">
+                                <label class="form-check-label" for="showPasswords">
+                                    Show passwords
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-footer">
                     <button type="submit" class="btn btn-warning">
@@ -202,4 +212,24 @@
         @csrf
     </form>
 @endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const showPasswordsCheckbox = document.getElementById('showPasswords');
+    const currentPasswordInput = document.getElementById('current_password');
+    const passwordInput = document.getElementById('password');
+    const passwordConfirmationInput = document.getElementById('password_confirmation');
+
+    // Function to toggle password visibility for all password fields
+    function togglePasswordVisibility() {
+        const inputType = showPasswordsCheckbox.checked ? 'text' : 'password';
+        currentPasswordInput.type = inputType;
+        passwordInput.type = inputType;
+        passwordConfirmationInput.type = inputType;
+    }
+
+    // Listen for checkbox changes
+    showPasswordsCheckbox.addEventListener('change', togglePasswordVisibility);
+});
+</script>
 @endsection

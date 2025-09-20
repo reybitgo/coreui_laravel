@@ -69,6 +69,14 @@
                                 <div class="row mb-3">
                                     <div class="col-6">
                                         <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="showPassword">
+                                            <label class="form-check-label" for="showPassword">
+                                                Show password
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="remember" id="remember">
                                             <label class="form-check-label" for="remember">
                                                 Remember me
@@ -102,4 +110,20 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const showPasswordCheckbox = document.getElementById('showPassword');
+    const passwordInput = document.getElementById('password');
+
+    // Function to toggle password visibility
+    function togglePasswordVisibility() {
+        const inputType = showPasswordCheckbox.checked ? 'text' : 'password';
+        passwordInput.type = inputType;
+    }
+
+    // Listen for checkbox changes
+    showPasswordCheckbox.addEventListener('change', togglePasswordVisibility);
+});
+</script>
 @endsection
