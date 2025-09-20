@@ -16985,4 +16985,14 @@ select.form-multi-select {
   display: block !important;
 }
 
+/* Modal logo visibility in dark theme */
+[data-coreui-theme="dark"] .modal .logo-dark {
+  display: none !important;
+}
+
+[data-coreui-theme="dark"] .modal .logo-light {
+  display: block !important;
+  margin: 0 auto !important;
+}
+
 /*# sourceMappingURL=style.css.map */

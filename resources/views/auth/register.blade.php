@@ -110,8 +110,8 @@
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" name="terms" id="terms" required>
                                 <label class="form-check-label" for="terms">
-                                    I agree to the <a href="#" class="text-decoration-none">Terms of Service</a>
-                                    and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                                    I agree to the <a href="#" class="text-decoration-none" data-coreui-toggle="modal" data-coreui-target="#termsModal">Terms of Service</a>
+                                    and <a href="#" class="text-decoration-none" data-coreui-toggle="modal" data-coreui-target="#privacyModal">Privacy Policy</a>
                                 </label>
                             </div>
 
@@ -132,4 +132,8 @@
         </div>
     </div>
 </div>
+
+<!-- Include Legal Modals -->
+@include('legal.terms-of-service')
+@include('legal.privacy-policy')
 @endsection
