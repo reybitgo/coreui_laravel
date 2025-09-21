@@ -60,10 +60,16 @@ Route::middleware(['auth', 'conditional.verified', 'role:admin'])->prefix('admin
         ->middleware('ewallet.security:transaction_approval')
         ->name('transactions.details');
 
-    // Logs Route
+    // Logs Routes
     Route::get('/logs', [AdminController::class, 'viewLogs'])
         ->middleware('ewallet.security:system_settings')
         ->name('logs');
+    Route::post('/logs/export', [AdminController::class, 'exportLogs'])
+        ->middleware('ewallet.security:system_settings')
+        ->name('logs.export');
+    Route::post('/logs/clear', [AdminController::class, 'clearOldLogs'])
+        ->middleware('ewallet.security:system_settings')
+        ->name('logs.clear');
 
     // Reports Routes
     Route::get('/reports', [AdminController::class, 'reports'])

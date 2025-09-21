@@ -30,72 +30,60 @@
 <div class="row g-3 mb-4">
     <!-- Current Balance -->
     <div class="col-sm-6 col-xl-3">
-        <div class="card text-white bg-success-gradient">
-            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+        <div class="card text-white bg-success-gradient h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
                     <div class="fs-4 fw-semibold">${{ number_format($wallet->balance, 2) }}</div>
                     <div>Current Balance</div>
                 </div>
-                <svg class="icon icon-3xl">
+                <svg class="icon icon-2xl">
                     <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wallet') }}"></use>
                 </svg>
-            </div>
-            <div class="c-chart-wrapper mt-3 mx-3" style="height:70px;">
-                <!-- Mini chart can be added here -->
             </div>
         </div>
     </div>
 
     <!-- Total Deposits -->
     <div class="col-sm-6 col-xl-3">
-        <div class="card text-white bg-info-gradient">
-            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+        <div class="card text-white bg-info-gradient h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
                     <div class="fs-4 fw-semibold">${{ number_format($totalDeposits, 2) }}</div>
                     <div>Total Deposits</div>
                 </div>
-                <svg class="icon icon-3xl">
+                <svg class="icon icon-2xl">
                     <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-arrow-circle-bottom') }}"></use>
                 </svg>
-            </div>
-            <div class="c-chart-wrapper mt-3 mx-3" style="height:70px;">
-                <!-- Mini chart can be added here -->
             </div>
         </div>
     </div>
 
     <!-- Total Withdrawals -->
     <div class="col-sm-6 col-xl-3">
-        <div class="card text-white bg-warning-gradient">
-            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+        <div class="card text-white bg-warning-gradient h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
                     <div class="fs-4 fw-semibold">${{ number_format($totalWithdrawals, 2) }}</div>
                     <div>Total Withdrawals</div>
                 </div>
-                <svg class="icon icon-3xl">
+                <svg class="icon icon-2xl">
                     <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-arrow-circle-top') }}"></use>
                 </svg>
-            </div>
-            <div class="c-chart-wrapper mt-3 mx-3" style="height:70px;">
-                <!-- Mini chart can be added here -->
             </div>
         </div>
     </div>
 
     <!-- Pending Transactions -->
     <div class="col-sm-6 col-xl-3">
-        <div class="card text-white bg-danger-gradient">
-            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+        <div class="card text-white bg-danger-gradient h-100">
+            <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
                     <div class="fs-4 fw-semibold">{{ $pendingTransactions }}</div>
                     <div>Pending Transactions</div>
                 </div>
-                <svg class="icon icon-3xl">
+                <svg class="icon icon-2xl">
                     <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-clock') }}"></use>
                 </svg>
-            </div>
-            <div class="c-chart-wrapper mt-3 mx-3" style="height:70px;">
-                <!-- Mini chart can be added here -->
             </div>
         </div>
     </div>
@@ -309,105 +297,142 @@
     </div>
     <div class="card-body p-0">
         <div class="list-group list-group-flush">
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>Email</strong>
+            <div class="list-group-item d-flex align-items-center">
+                <div class="avatar avatar-sm bg-primary-gradient me-3">
+                    <svg class="icon text-white icon-xs">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-envelope-closed') }}"></use>
+                    </svg>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">Email Address</div>
                     <div class="small text-body-secondary">{{ $user->email }}</div>
                 </div>
-                <svg class="icon text-body-secondary">
-                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-envelope-closed') }}"></use>
-                </svg>
+                @if($user->email_verified_at)
+                    <span class="badge bg-success text-white rounded-pill">
+                        <svg class="icon icon-xs me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check-circle') }}"></use>
+                        </svg>
+                        Verified
+                    </span>
+                @else
+                    <span class="badge bg-danger text-white rounded-pill">
+                        <svg class="icon icon-xs me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x-circle') }}"></use>
+                        </svg>
+                        Unverified
+                    </span>
+                @endif
             </div>
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>Account Status</strong>
-                    <div class="small text-body-secondary mt-1">
-                        @if($user->email_verified_at)
-                            <span class="badge bg-success-gradient">
-                                <svg class="icon icon-xs me-1">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check-circle') }}"></use>
-                                </svg>
-                                Verified
-                            </span>
-                        @else
-                            <span class="badge bg-danger-gradient">
-                                <svg class="icon icon-xs me-1">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x-circle') }}"></use>
-                                </svg>
-                                Unverified
-                            </span>
-                        @endif
-                    </div>
+
+            <div class="list-group-item d-flex align-items-center">
+                <div class="avatar avatar-sm bg-info-gradient me-3">
+                    <svg class="icon text-white icon-xs">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-shield-alt') }}"></use>
+                    </svg>
                 </div>
-                <svg class="icon text-body-secondary">
-                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-shield-alt') }}"></use>
-                </svg>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">Account Security</div>
+                    <div class="small text-body-secondary">Email verification status</div>
+                </div>
+                @if($user->email_verified_at)
+                    <span class="badge bg-success text-white rounded-pill">
+                        <svg class="icon icon-xs me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check-circle') }}"></use>
+                        </svg>
+                        Secured
+                    </span>
+                @else
+                    <span class="badge bg-warning text-dark rounded-pill">
+                        <svg class="icon icon-xs me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-warning') }}"></use>
+                        </svg>
+                        Needs Attention
+                    </span>
+                @endif
             </div>
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>Two-Factor Authentication</strong>
-                    <div class="small text-body-secondary mt-1">
-                        @if($user->two_factor_secret)
-                            <span class="badge bg-success-gradient">
-                                <svg class="icon icon-xs me-1">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-lock-locked') }}"></use>
-                                </svg>
-                                Enabled
-                            </span>
-                        @else
-                            <span class="badge bg-warning-gradient">
-                                <svg class="icon icon-xs me-1">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-lock-unlocked') }}"></use>
-                                </svg>
-                                Disabled
-                            </span>
-                        @endif
-                    </div>
+
+            <div class="list-group-item d-flex align-items-center">
+                <div class="avatar avatar-sm bg-secondary-gradient me-3">
+                    <svg class="icon text-white icon-xs">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-mobile') }}"></use>
+                    </svg>
                 </div>
-                <svg class="icon text-body-secondary">
-                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-mobile') }}"></use>
-                </svg>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">Two-Factor Authentication</div>
+                    <div class="small text-body-secondary">Additional security protection</div>
+                </div>
+                @if($user->two_factor_secret)
+                    <span class="badge bg-success text-white rounded-pill">
+                        <svg class="icon icon-xs me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-lock-locked') }}"></use>
+                        </svg>
+                        Enabled
+                    </span>
+                @else
+                    <span class="badge bg-warning text-dark rounded-pill">
+                        <svg class="icon icon-xs me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-lock-unlocked') }}"></use>
+                        </svg>
+                        Disabled
+                    </span>
+                @endif
             </div>
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>Wallet Status</strong>
-                    <div class="small text-body-secondary mt-1">
-                        @if($wallet->is_active)
-                            <span class="badge bg-success-gradient">
-                                <svg class="icon icon-xs me-1">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check-circle') }}"></use>
-                                </svg>
-                                Active
-                            </span>
-                        @else
-                            <span class="badge bg-danger-gradient">
-                                <svg class="icon icon-xs me-1">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-ban') }}"></use>
-                                </svg>
-                                Frozen
-                            </span>
-                        @endif
-                    </div>
+
+            <div class="list-group-item d-flex align-items-center">
+                <div class="avatar avatar-sm bg-success-gradient me-3">
+                    <svg class="icon text-white icon-xs">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wallet') }}"></use>
+                    </svg>
                 </div>
-                <svg class="icon text-body-secondary">
-                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wallet') }}"></use>
-                </svg>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">Wallet Status</div>
+                    <div class="small text-body-secondary">Current wallet access level</div>
+                </div>
+                @if($wallet->is_active)
+                    <span class="badge bg-success text-white rounded-pill">
+                        <svg class="icon icon-xs me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check-circle') }}"></use>
+                        </svg>
+                        Active
+                    </span>
+                @else
+                    <span class="badge bg-danger text-white rounded-pill">
+                        <svg class="icon icon-xs me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-ban') }}"></use>
+                        </svg>
+                        Frozen
+                    </span>
+                @endif
             </div>
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>Total Transactions</strong>
-                    <div class="small text-body-secondary">{{ $totalTransactions }} transactions</div>
+
+            <div class="list-group-item d-flex align-items-center">
+                <div class="avatar avatar-sm bg-warning-gradient me-3">
+                    <svg class="icon text-white icon-xs">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-chart-line') }}"></use>
+                    </svg>
                 </div>
-                <span class="badge bg-info-gradient">{{ $totalTransactions }}</span>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">Transaction Activity</div>
+                    <div class="small text-body-secondary">Total completed transactions</div>
+                </div>
+                <span class="badge bg-info text-white rounded-pill">
+                    {{ $totalTransactions }} Transactions
+                </span>
             </div>
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>Member Since</strong>
-                    <div class="small text-body-secondary">{{ $user->created_at->format('M d, Y') }}</div>
+
+            <div class="list-group-item d-flex align-items-center">
+                <div class="avatar avatar-sm bg-purple-gradient me-3">
+                    <svg class="icon text-white icon-xs">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-calendar') }}"></use>
+                    </svg>
                 </div>
-                <svg class="icon text-body-secondary">
-                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-calendar') }}"></use>
-                </svg>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">Member Since</div>
+                    <div class="small text-body-secondary">Account creation date</div>
+                </div>
+                <span class="text-body-secondary fw-semibold">
+                    {{ $user->created_at->format('M d, Y') }}
+                </span>
             </div>
         </div>
     </div>
@@ -457,4 +482,139 @@
     </div>
 </div>
 @endif
+
+<style>
+/* Gradient backgrounds */
+.bg-success-gradient {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.bg-info-gradient {
+    background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+}
+
+.bg-warning-gradient {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.bg-danger-gradient {
+    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+}
+
+.bg-purple-gradient {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+}
+
+.bg-secondary-gradient {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+/* Equal height cards */
+.h-100 {
+    height: 100% !important;
+}
+
+/* Compact card bodies for stats cards */
+.row .card .card-body {
+    padding: 1.25rem;
+}
+
+/* Welcome header improvements */
+.card.border-0.shadow-sm {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.card.border-0.shadow-sm .card-title {
+    color: white !important;
+}
+
+.card.border-0.shadow-sm .text-body-secondary {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Icon sizing */
+.icon-2xl {
+    width: 2rem;
+    height: 2rem;
+}
+
+.icon-xl {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.icon-sm {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+/* Avatar sizing */
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+}
+
+.avatar-md {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.avatar-xl {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+}
+
+/* List group item padding fix for avatar spacing */
+.list-group-item {
+    padding: 1rem 1.25rem;
+}
+
+/* Transaction item improvements */
+.transaction-item {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.transaction-item:hover {
+    background-color: rgba(0, 123, 255, 0.02);
+}
+
+.transaction-item:last-child {
+    border-bottom: none !important;
+}
+
+/* Badge improvements */
+.badge.rounded-pill {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 8px;
+}
+
+/* Empty state */
+.empty-state .avatar-xl {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Card header improvements */
+.card-header.bg-white {
+    padding: 1.25rem 1.5rem;
+}
+
+/* Quick actions button improvements */
+.btn-purple {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    border-color: #6f42c1;
+    color: white;
+}
+
+.btn-purple:hover {
+    background: linear-gradient(135deg, #5a32a3 0%, #d91a72 100%);
+    border-color: #5a32a3;
+    color: white;
+}
+</style>
 @endsection

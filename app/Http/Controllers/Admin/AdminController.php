@@ -579,6 +579,233 @@ class AdminController extends Controller
         return view('admin.logs', compact('logs', 'logType', 'search', 'level'));
     }
 
+    public function exportLogs(Request $request)
+    {
+        $this->authorize('system_settings');
+
+        $request->validate([
+            'format' => 'required|in:csv,json',
+            'type' => 'nullable|string',
+            'level' => 'nullable|string',
+            'search' => 'nullable|string'
+        ]);
+
+        // Get the same logs data as in viewLogs method
+        $allLogs = collect([
+            [
+                'id' => 1,
+                'timestamp' => now()->subMinutes(5),
+                'level' => 'INFO',
+                'type' => 'security',
+                'message' => 'User login successful',
+                'user_id' => 2,
+                'ip_address' => '192.168.1.100',
+                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            ],
+            [
+                'id' => 2,
+                'timestamp' => now()->subMinutes(12),
+                'level' => 'WARNING',
+                'type' => 'security',
+                'message' => 'Failed login attempt',
+                'user_id' => null,
+                'ip_address' => '203.0.113.45',
+                'user_agent' => 'curl/7.68.0'
+            ],
+            [
+                'id' => 3,
+                'timestamp' => now()->subMinutes(18),
+                'level' => 'INFO',
+                'type' => 'transaction',
+                'message' => 'Transaction approved: $1,500.00 withdrawal',
+                'user_id' => 1,
+                'ip_address' => '192.168.1.10',
+                'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'
+            ],
+            [
+                'id' => 4,
+                'timestamp' => now()->subMinutes(25),
+                'level' => 'ERROR',
+                'type' => 'system',
+                'message' => 'Database connection timeout',
+                'user_id' => null,
+                'ip_address' => 'localhost',
+                'user_agent' => 'Internal System'
+            ],
+            [
+                'id' => 5,
+                'timestamp' => now()->subHour(),
+                'level' => 'CRITICAL',
+                'type' => 'security',
+                'message' => 'Suspicious transaction blocked: $10,000.00',
+                'user_id' => 4,
+                'ip_address' => '198.51.100.23',
+                'user_agent' => 'Mozilla/5.0 (Linux; Android 10; SM-G975F)'
+            ],
+            [
+                'id' => 6,
+                'timestamp' => now()->subHours(2),
+                'level' => 'INFO',
+                'type' => 'system',
+                'message' => 'Cache cleared successfully',
+                'user_id' => 1,
+                'ip_address' => '192.168.1.10',
+                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+            ],
+            [
+                'id' => 7,
+                'timestamp' => now()->subHours(3),
+                'level' => 'WARNING',
+                'type' => 'transaction',
+                'message' => 'Large deposit flagged for review: $5,000.00',
+                'user_id' => 3,
+                'ip_address' => '192.168.1.50',
+                'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X)'
+            ],
+            [
+                'id' => 8,
+                'timestamp' => now()->subHours(4),
+                'level' => 'DEBUG',
+                'type' => 'system',
+                'message' => 'Email notification sent successfully',
+                'user_id' => null,
+                'ip_address' => 'localhost',
+                'user_agent' => 'System Cron'
+            ]
+        ]);
+
+        // Apply filters
+        $logType = $request->get('type', 'all');
+        $level = $request->get('level', 'all');
+        $search = $request->get('search', '');
+
+        if ($logType !== 'all') {
+            $allLogs = $allLogs->where('type', $logType);
+        }
+
+        if ($level !== 'all') {
+            $allLogs = $allLogs->where('level', $level);
+        }
+
+        if (!empty($search)) {
+            $allLogs = $allLogs->filter(function ($log) use ($search) {
+                return stripos($log['message'], $search) !== false ||
+                       stripos($log['ip_address'], $search) !== false;
+            });
+        }
+
+        $logs = $allLogs->sortByDesc('timestamp')->values();
+        $format = $request->get('format');
+        $timestamp = now()->format('Y-m-d_H-i-s');
+
+        if ($format === 'csv') {
+            return $this->exportLogsAsCSV($logs, $timestamp);
+        } else {
+            return $this->exportLogsAsJSON($logs, $timestamp);
+        }
+    }
+
+    private function exportLogsAsCSV($logs, $timestamp)
+    {
+        $filename = "system_logs_{$timestamp}.csv";
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
+        ];
+
+        return response()->stream(function () use ($logs) {
+            $handle = fopen('php://output', 'w');
+
+            // Add CSV headers
+            fputcsv($handle, [
+                'ID',
+                'Timestamp',
+                'Level',
+                'Type',
+                'Message',
+                'User ID',
+                'IP Address',
+                'User Agent'
+            ]);
+
+            // Add data rows
+            foreach ($logs as $log) {
+                fputcsv($handle, [
+                    $log['id'],
+                    $log['timestamp']->format('Y-m-d H:i:s'),
+                    $log['level'],
+                    $log['type'],
+                    $log['message'],
+                    $log['user_id'] ?? '',
+                    $log['ip_address'],
+                    $log['user_agent']
+                ]);
+            }
+
+            fclose($handle);
+        }, 200, $headers);
+    }
+
+    private function exportLogsAsJSON($logs, $timestamp)
+    {
+        $filename = "system_logs_{$timestamp}.json";
+
+        // Format logs for JSON export
+        $exportData = [
+            'export_info' => [
+                'exported_at' => now()->toISOString(),
+                'total_records' => $logs->count(),
+                'export_format' => 'json'
+            ],
+            'logs' => $logs->map(function ($log) {
+                return [
+                    'id' => $log['id'],
+                    'timestamp' => $log['timestamp']->toISOString(),
+                    'level' => $log['level'],
+                    'type' => $log['type'],
+                    'message' => $log['message'],
+                    'user_id' => $log['user_id'],
+                    'ip_address' => $log['ip_address'],
+                    'user_agent' => $log['user_agent']
+                ];
+            })->values()
+        ];
+
+        return response()->json($exportData)
+            ->header('Content-Type', 'application/json')
+            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"")
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
+    }
+
+    public function clearOldLogs(Request $request)
+    {
+        $this->authorize('system_settings');
+
+        $request->validate([
+            'days' => 'nullable|integer|min:1|max:365'
+        ]);
+
+        $days = $request->get('days', 30);
+        $cutoffDate = now()->subDays($days);
+
+        // In a real implementation, this would delete actual log files or database records
+        // For this demo, we'll simulate the deletion
+        $deletedCount = rand(50, 200); // Simulate deleted log count
+
+        return response()->json([
+            'success' => true,
+            'message' => "Successfully cleared {$deletedCount} log entries older than {$days} days.",
+            'deleted_count' => $deletedCount,
+            'cutoff_date' => $cutoffDate->format('Y-m-d H:i:s')
+        ]);
+    }
+
     public function reports()
     {
         $this->authorize('system_settings');

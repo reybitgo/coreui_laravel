@@ -222,7 +222,7 @@
     </div>
     @if(isset($wallets) && $wallets->hasPages())
         <div class="card-footer">
-            {{ $wallets->links() }}
+            {{ $wallets->links('vendor.pagination.coreui') }}
         </div>
     @endif
 </div>
@@ -431,7 +431,7 @@
                         Showing {{ $allTransactions->firstItem() ?? 0 }} to {{ $allTransactions->lastItem() ?? 0 }}
                         of {{ $allTransactions->total() }} transactions
                     </div>
-                    {{ $allTransactions->links() }}
+                    {{ $allTransactions->links('vendor.pagination.coreui') }}
                 </div>
             </div>
         @else
@@ -451,4 +451,158 @@
         @endif
     </div>
 </div>
+
+<style>
+/* Enhanced styling for wallet management page */
+.table-responsive {
+    border-radius: 8px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    background-color: #f8f9fa;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.card {
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.btn-group .btn {
+    border-radius: 6px !important;
+    margin: 0 1px;
+}
+
+.form-select, .form-control {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.form-select:focus, .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+}
+
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.25rem;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.list-group-item:hover {
+    background-color: rgba(0, 123, 255, 0.02);
+}
+
+/* Pagination improvements */
+.card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0 0 12px 12px !important;
+}
+
+/* Transaction amount styling */
+.text-success {
+    color: #198754 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Stats cards gradient enhancements */
+.bg-primary-gradient {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+.bg-success-gradient {
+    background: linear-gradient(135deg, #198754 0%, #157347 100%);
+}
+
+.bg-danger-gradient {
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+}
+
+.bg-warning-gradient {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+}
+
+.bg-info-gradient {
+    background: linear-gradient(135deg, #0dcaf0 0%, #0baccc 100%);
+}
+
+/* Action buttons styling */
+.btn-outline-primary:hover, .btn-outline-success:hover, .btn-outline-warning:hover, .btn-outline-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-sm {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* Filter section styling */
+.card-body.border-bottom {
+    background-color: #fafafa;
+    border-radius: 0;
+}
+
+/* Empty state styling */
+.text-center.py-5 {
+    padding: 3rem 1rem !important;
+}
+
+/* Table responsive improvements */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 14px;
+    }
+
+    .btn-group .btn {
+        font-size: 12px;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+}
+</style>
 @endsection

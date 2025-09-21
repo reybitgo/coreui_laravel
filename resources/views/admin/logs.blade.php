@@ -342,17 +342,168 @@ function viewLogDetails(log) {
 
 
 function exportLogs(format) {
-    showAlert(`Logs export started. ${format.toUpperCase()} file will be generated shortly.`, 'success');
+    // Get current filter values
+    const urlParams = new URLSearchParams(window.location.search);
+    const type = urlParams.get('type') || 'all';
+    const level = urlParams.get('level') || 'all';
+    const search = urlParams.get('search') || '';
+
+    // Show loading state
+    showAlert(`Preparing ${format.toUpperCase()} export...`, 'info');
+
+    // Create form and submit
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ route("admin.logs.export") }}';
+    form.style.display = 'none';
+
+    // Add CSRF token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_token';
+    csrfInput.value = '{{ csrf_token() }}';
+    form.appendChild(csrfInput);
+
+    // Add format
+    const formatInput = document.createElement('input');
+    formatInput.type = 'hidden';
+    formatInput.name = 'format';
+    formatInput.value = format;
+    form.appendChild(formatInput);
+
+    // Add filters
+    const typeInput = document.createElement('input');
+    typeInput.type = 'hidden';
+    typeInput.name = 'type';
+    typeInput.value = type;
+    form.appendChild(typeInput);
+
+    const levelInput = document.createElement('input');
+    levelInput.type = 'hidden';
+    levelInput.name = 'level';
+    levelInput.value = level;
+    form.appendChild(levelInput);
+
+    const searchInput = document.createElement('input');
+    searchInput.type = 'hidden';
+    searchInput.name = 'search';
+    searchInput.value = search;
+    form.appendChild(searchInput);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
+    // Show success message after a delay
+    setTimeout(() => {
+        showAlert(`${format.toUpperCase()} export completed and download started.`, 'success');
+    }, 1000);
 }
 
 function clearOldLogs() {
-    if (confirm('Are you sure you want to clear all logs older than 30 days? This action cannot be undone.')) {
-        showAlert('Old logs cleared successfully.', 'success');
-    }
+    // Create a more sophisticated confirmation modal
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Clear Old Logs</h5>
+                    <button type="button" class="btn-close" data-coreui-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="clearDays" class="form-label">Clear logs older than:</label>
+                        <select id="clearDays" class="form-select">
+                            <option value="7">7 days</option>
+                            <option value="30" selected>30 days</option>
+                            <option value="60">60 days</option>
+                            <option value="90">90 days</option>
+                            <option value="180">6 months</option>
+                            <option value="365">1 year</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-warning">
+                        <strong>Warning:</strong> This action cannot be undone. All log entries older than the selected period will be permanently deleted.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmClearLogs()">Clear Logs</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    const modalInstance = new coreui.Modal(modal);
+    modalInstance.show();
+
+    // Clean up modal after it's hidden
+    modal.addEventListener('hidden.coreui.modal', () => {
+        document.body.removeChild(modal);
+    });
+}
+
+function confirmClearLogs() {
+    const days = document.getElementById('clearDays').value;
+
+    fetch('{{ route("admin.logs.clear") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ days: parseInt(days) })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message, 'success');
+            // Close the modal
+            const modal = coreui.Modal.getInstance(document.querySelector('.modal'));
+            if (modal) {
+                modal.hide();
+            }
+            // Refresh the page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            showAlert('Failed to clear logs. Please try again.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('An error occurred while clearing logs.', 'error');
+    });
 }
 
 function showAlert(message, type = 'success') {
-    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    let alertClass, iconName;
+
+    switch(type) {
+        case 'success':
+            alertClass = 'alert-success';
+            iconName = 'check';
+            break;
+        case 'error':
+        case 'danger':
+            alertClass = 'alert-danger';
+            iconName = 'x';
+            break;
+        case 'info':
+            alertClass = 'alert-info';
+            iconName = 'info';
+            break;
+        case 'warning':
+            alertClass = 'alert-warning';
+            iconName = 'warning';
+            break;
+        default:
+            alertClass = 'alert-success';
+            iconName = 'check';
+    }
 
     const alert = document.createElement('div');
     alert.className = `alert ${alertClass} alert-dismissible fade show shadow position-fixed top-0 end-0 m-3`;
@@ -360,7 +511,7 @@ function showAlert(message, type = 'success') {
     alert.innerHTML = `
         <div class="d-flex align-items-center">
             <svg class="icon me-2">
-                <use xlink:href="${window.location.origin}/coreui-template/vendors/@coreui/icons/svg/free.svg#cil-${type === 'success' ? 'check' : 'x'}"></use>
+                <use xlink:href="${window.location.origin}/coreui-template/vendors/@coreui/icons/svg/free.svg#cil-${iconName}"></use>
             </svg>
             ${message}
         </div>
