@@ -46,6 +46,7 @@
 </div>
 
 <!-- Recent Recipients -->
+@if($frequentRecipients->count() > 0)
 <div class="row mb-4">
     <div class="col-md-8 mx-auto">
         <div class="card">
@@ -54,35 +55,30 @@
                     <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-people') }}"></use>
                 </svg>
                 <strong>Frequent Recipients</strong>
+                <small class="text-body-secondary ms-auto">Your most frequent transfer recipients</small>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setRecipient('john.doe@example.com')">
-                        <svg class="icon me-1">
-                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-user') }}"></use>
-                        </svg>
-                        John Doe
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setRecipient('jane.smith@example.com')">
-                        <svg class="icon me-1">
-                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-user') }}"></use>
-                        </svg>
-                        Jane Smith
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setRecipient('mike.wilson@example.com')">
-                        <svg class="icon me-1">
-                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-user') }}"></use>
-                        </svg>
-                        Mike Wilson
-                    </button>
+                    @foreach($frequentRecipients as $recipient)
+                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                onclick="setRecipient('{{ $recipient->username ?: $recipient->email }}')"
+                                title="Transferred {{ $recipient->transfer_count }} time(s) - Last: {{ \Carbon\Carbon::parse($recipient->last_transfer_at)->diffForHumans() }}">
+                            <svg class="icon me-1">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-user') }}"></use>
+                            </svg>
+                            {{ $recipient->fullname ?: ($recipient->username ?: $recipient->email) }}
+                            <span class="badge bg-primary ms-1">{{ $recipient->transfer_count }}</span>
+                        </button>
+                    @endforeach
                 </div>
                 <div class="text-center mt-2">
-                    <small class="text-body-secondary">Click to quickly select a recipient</small>
+                    <small class="text-body-secondary">Click to quickly select a recipient • Numbers show transfer count</small>
                 </div>
             </div>
         </div>
     </div>
 </div>
+@endif
 
 <!-- Quick Amount Buttons -->
 <div class="row mb-4">
