@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Member;
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\Wallet;
+use App\Models\User;
+use App\Mail\DepositNotification;
+use App\Mail\WithdrawalNotification;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class WalletController extends Controller
 {
@@ -17,7 +21,18 @@ class WalletController extends Controller
     {
         $this->authorize('deposit_funds');
 
-        return view('member.deposit');
+        $paymentMethods = [
+            'gcash_enabled' => \App\Models\SystemSetting::get('gcash_enabled', true),
+            'gcash_number' => \App\Models\SystemSetting::get('gcash_number', ''),
+            'gcash_name' => \App\Models\SystemSetting::get('gcash_name', ''),
+            'maya_enabled' => \App\Models\SystemSetting::get('maya_enabled', true),
+            'maya_number' => \App\Models\SystemSetting::get('maya_number', ''),
+            'maya_name' => \App\Models\SystemSetting::get('maya_name', ''),
+            'cash_enabled' => \App\Models\SystemSetting::get('cash_enabled', true),
+            'others_enabled' => \App\Models\SystemSetting::get('others_enabled', true),
+        ];
+
+        return view('member.deposit', compact('paymentMethods'));
     }
 
     public function processDeposit(Request $request)
@@ -26,12 +41,14 @@ class WalletController extends Controller
 
         $request->validate([
             'amount' => 'required|numeric|min:1|max:10000',
-            'payment_method' => 'required|string|in:credit_card,bank_transfer,paypal',
+            'payment_method' => 'required|string|max:255',
         ]);
+
+        $user = Auth::user();
 
         // Create transaction record
         $transaction = Transaction::create([
-            'user_id' => Auth::id(),
+            'user_id' => $user->id,
             'type' => 'deposit',
             'amount' => $request->amount,
             'status' => 'pending',
@@ -42,6 +59,12 @@ class WalletController extends Controller
                 'user_agent' => $request->userAgent(),
             ]
         ]);
+
+        // Send email notification to all admin users
+        $adminUsers = User::role('admin')->get();
+        foreach ($adminUsers as $admin) {
+            Mail::to($admin->email)->send(new DepositNotification($transaction, $user));
+        }
 
         session()->flash('success', 'Deposit request of $' . number_format($request->amount, 2) . ' has been submitted for approval. Reference: ' . $transaction->reference_number);
 
@@ -64,7 +87,29 @@ class WalletController extends Controller
             'maximum_charge' => \App\Models\SystemSetting::get('transfer_maximum_charge', 999999),
         ];
 
-        return view('member.transfer', compact('wallet', 'transferSettings'));
+        // Get frequent recipients (top 5 most frequently transferred to users)
+        $frequentRecipients = \DB::table('transactions')
+            ->join('users', function($join) {
+                $join->on('users.id', '=', \DB::raw('CAST(JSON_UNQUOTE(JSON_EXTRACT(transactions.metadata, "$.recipient_id")) AS UNSIGNED)'));
+            })
+            ->where('transactions.user_id', $user->id)
+            ->where('transactions.type', 'transfer_out')
+            ->where('transactions.status', 'approved')
+            ->select(
+                'users.id',
+                'users.username',
+                'users.email',
+                'users.fullname',
+                \DB::raw('COUNT(*) as transfer_count'),
+                \DB::raw('MAX(transactions.created_at) as last_transfer_at')
+            )
+            ->groupBy('users.id', 'users.username', 'users.email', 'users.fullname')
+            ->orderBy('transfer_count', 'desc')
+            ->orderBy('last_transfer_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('member.transfer', compact('wallet', 'transferSettings', 'frequentRecipients'));
     }
 
     public function processTransfer(Request $request)
@@ -208,8 +253,24 @@ class WalletController extends Controller
         $user = Auth::user();
         $wallet = $user->getOrCreateWallet();
 
+        // Calculate pending withdrawals to show available balance (only pending withdrawal amounts, fees are already deducted)
+        $pendingWithdrawals = Transaction::where('user_id', $user->id)
+            ->where('type', 'withdrawal')
+            ->where('status', 'pending')
+            ->sum('amount');
+
+        $availableBalance = $wallet->balance - $pendingWithdrawals;
+
+        // Get payment method settings
+        $paymentSettings = [
+            'allow_others' => \App\Models\SystemSetting::get('others_enabled', true),
+            'gcash_enabled' => \App\Models\SystemSetting::get('gcash_enabled', true),
+            'maya_enabled' => \App\Models\SystemSetting::get('maya_enabled', true),
+            'cash_enabled' => \App\Models\SystemSetting::get('cash_enabled', true),
+        ];
+
         // Get withdrawal fee settings for JavaScript
-        $withdrawalSettings = [
+        $withdrawalFeeSettings = [
             'fee_enabled' => \App\Models\SystemSetting::get('withdrawal_fee_enabled', false),
             'fee_type' => \App\Models\SystemSetting::get('withdrawal_fee_type', 'percentage'),
             'fee_value' => \App\Models\SystemSetting::get('withdrawal_fee_value', 0),
@@ -217,20 +278,43 @@ class WalletController extends Controller
             'maximum_fee' => \App\Models\SystemSetting::get('withdrawal_maximum_fee', 999999),
         ];
 
-        return view('member.withdraw', compact('wallet', 'withdrawalSettings'));
+        return view('member.withdraw', compact('wallet', 'paymentSettings', 'pendingWithdrawals', 'availableBalance', 'withdrawalFeeSettings'));
     }
 
     public function processWithdraw(Request $request)
     {
         $this->authorize('withdraw_funds');
 
-        $request->validate([
-            'amount' => 'required|numeric|min:1|max:10000',
-            'bank_account' => 'required|string|min:10|max:20',
-            'bank_name' => 'required|string',
-            'routing_number' => 'nullable|string|size:9',
-            'agree_terms' => 'required|accepted',
+        \Log::info('Withdrawal request started', [
+            'user_id' => Auth::id(),
+            'request_data' => $request->all()
         ]);
+
+        $validationRules = [
+            'amount' => 'required|numeric|min:1|max:10000',
+            'payment_method' => 'required|string|max:255',
+            'agree_terms' => 'required|accepted',
+        ];
+
+        // Determine the actual payment method (either from select or custom input)
+        $paymentMethod = $request->payment_method;
+        if ($paymentMethod === 'Others' && $request->custom_payment_method) {
+            $paymentMethod = $request->custom_payment_method;
+            $validationRules['custom_payment_method'] = 'required|string|max:255';
+        }
+
+        // Add conditional validation based on payment method
+        if ($request->payment_method === 'Gcash') {
+            $validationRules['gcash_number'] = 'required|string|max:11';
+        } elseif ($request->payment_method === 'Maya') {
+            $validationRules['maya_number'] = 'required|string|max:11';
+        } elseif ($request->payment_method === 'Cash') {
+            $validationRules['pickup_location'] = 'required|string|max:255';
+        } elseif ($request->payment_method === 'Others') {
+            $validationRules['payment_details'] = 'required|string|max:1000';
+        }
+
+        $request->validate($validationRules);
 
         $user = Auth::user();
         $wallet = $user->getOrCreateWallet();
@@ -240,9 +324,28 @@ class WalletController extends Controller
         $withdrawalFee = $this->calculateWithdrawalFee($withdrawalAmount);
         $totalAmount = $withdrawalAmount + $withdrawalFee;
 
-        // Check if user's wallet has sufficient balance (including fee)
-        if ($wallet->balance < $totalAmount) {
-            return redirect()->back()->withErrors(['amount' => 'Insufficient balance. You need $' . number_format($totalAmount, 2) . ' (Withdrawal: $' . number_format($withdrawalAmount, 2) . ' + Fee: $' . number_format($withdrawalFee, 2) . '). Your current balance is $' . number_format($wallet->balance, 2)]);
+        // Calculate total pending withdrawal requests for this user (only withdrawal amounts, fees are already deducted)
+        $pendingWithdrawals = Transaction::where('user_id', $user->id)
+            ->where('type', 'withdrawal')
+            ->where('status', 'pending')
+            ->sum('amount');
+
+        // Check if user's wallet has sufficient balance including pending withdrawals
+        $availableBalance = $wallet->balance - $pendingWithdrawals;
+
+        if ($availableBalance < $totalAmount) {
+            $errorMessage = 'Insufficient available balance. ';
+            if ($withdrawalFee > 0) {
+                $errorMessage .= 'Total required: $' . number_format($totalAmount, 2) . ' (Withdrawal: $' . number_format($withdrawalAmount, 2) . ' + Fee: $' . number_format($withdrawalFee, 2) . '). ';
+            } else {
+                $errorMessage .= 'Total required: $' . number_format($withdrawalAmount, 2) . '. ';
+            }
+            if ($pendingWithdrawals > 0) {
+                $errorMessage .= 'You have $' . number_format($pendingWithdrawals, 2) . ' in pending withdrawals. ';
+            }
+            $errorMessage .= 'Available balance: $' . number_format($availableBalance, 2) . '. Wallet balance: $' . number_format($wallet->balance, 2) . '.';
+
+            return redirect()->back()->withErrors(['amount' => $errorMessage]);
         }
 
         // Check if user's wallet is active
@@ -251,65 +354,107 @@ class WalletController extends Controller
         }
 
         try {
-            \DB::transaction(function () use ($request, $user, $wallet, $withdrawalAmount, $withdrawalFee, $totalAmount) {
+            $transaction = null;
+
+            \DB::transaction(function () use ($request, $user, $wallet, $withdrawalAmount, $withdrawalFee, $totalAmount, $paymentMethod, &$transaction) {
+                // Build description based on payment method
+                $description = 'Withdrawal via ' . $paymentMethod;
+                if ($request->payment_method === 'Gcash') {
+                    $description .= ' to ' . $request->gcash_number;
+                } elseif ($request->payment_method === 'Maya') {
+                    $description .= ' to ' . $request->maya_number;
+                } elseif ($request->payment_method === 'Cash') {
+                    $description .= ' - Pickup at: ' . $request->pickup_location;
+                }
+
+                // Build metadata based on payment method
+                $metadata = [
+                    'payment_method' => $paymentMethod,
+                    'withdrawal_method' => strtolower($paymentMethod),
+                    'withdrawal_fee' => $withdrawalFee,
+                    'total_amount' => $totalAmount,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ];
+
+                if ($request->payment_method === 'Gcash') {
+                    $metadata['gcash_number'] = $request->gcash_number;
+                } elseif ($request->payment_method === 'Maya') {
+                    $metadata['maya_number'] = $request->maya_number;
+                } elseif ($request->payment_method === 'Cash') {
+                    $metadata['pickup_location'] = $request->pickup_location;
+                } elseif ($request->payment_method === 'Others') {
+                    $metadata['payment_details'] = $request->payment_details;
+                }
+
                 // Create withdrawal transaction
                 $transaction = Transaction::create([
                     'user_id' => $user->id,
                     'type' => 'withdrawal',
                     'amount' => $withdrawalAmount,
                     'status' => 'pending', // Withdrawals need approval
-                    'payment_method' => 'bank_transfer',
-                    'description' => 'Withdrawal to ' . $request->bank_name . ' account ending in ' . substr($request->bank_account, -4),
-                    'metadata' => [
-                        'bank_account' => $request->bank_account,
-                        'bank_name' => $request->bank_name,
-                        'routing_number' => $request->routing_number,
-                        'withdrawal_method' => 'bank_transfer',
-                        'withdrawal_fee' => $withdrawalFee,
-                        'total_amount' => $totalAmount,
-                        'ip_address' => $request->ip(),
-                        'user_agent' => $request->userAgent(),
-                    ]
+                    'payment_method' => $paymentMethod,
+                    'description' => $description,
+                    'metadata' => $metadata,
                 ]);
 
-                // Create withdrawal fee transaction if applicable (ALWAYS approved - fee is non-refundable)
+                // Create withdrawal fee transaction if applicable and deduct immediately
                 if ($withdrawalFee > 0) {
                     Transaction::create([
                         'user_id' => $user->id,
                         'type' => 'withdrawal_fee',
                         'amount' => $withdrawalFee,
-                        'status' => 'approved', // Fee is immediately approved and non-refundable
-                        'approved_by' => $user->id, // System-approved
-                        'approved_at' => now(),
+                        'status' => 'approved', // Fee is deducted immediately upon submission
                         'payment_method' => 'internal',
-                        'description' => 'Withdrawal processing fee for ' . $request->bank_name,
-                        'admin_notes' => 'Withdrawal processing fee - non-refundable',
+                        'description' => 'Withdrawal processing fee for ' . $description,
                         'metadata' => [
                             'related_transaction_id' => $transaction->id,
                             'withdrawal_amount' => $withdrawalAmount,
                             'fee_type' => \App\Models\SystemSetting::get('withdrawal_fee_type', 'percentage'),
                             'fee_value' => \App\Models\SystemSetting::get('withdrawal_fee_value', 0),
-                            'non_refundable' => true,
+                            'processed_at' => now(),
+                            'auto_processed' => true,
                         ]
                     ]);
+
+                    // Immediately deduct the fee from wallet balance
+                    $wallet->decrement('balance', $withdrawalFee);
                 }
 
-                // Update wallet balance (deduct immediately, but transaction is pending approval)
-                $wallet->decrement('balance', $totalAmount); // Deduct withdrawal amount + fee
+                // For manual processing, don't deduct withdrawal amount until approved
+                // Just update last transaction time
                 $wallet->update(['last_transaction_at' => now()]);
             });
 
-            $message = 'Withdrawal request of $' . number_format($withdrawalAmount, 2) . ' has been submitted for approval.';
-            if ($withdrawalFee > 0) {
-                $message .= ' (Processing fee: $' . number_format($withdrawalFee, 2) . ' deducted immediately)';
+            // Send email notification to all admin users
+            $adminUsers = User::role('admin')->get();
+            foreach ($adminUsers as $admin) {
+                try {
+                    Mail::to($admin->email)->send(new WithdrawalNotification($transaction, $user));
+                } catch (\Exception $emailError) {
+                    \Log::warning('Failed to send withdrawal notification email', [
+                        'admin_email' => $admin->email,
+                        'error' => $emailError->getMessage()
+                    ]);
+                }
             }
-            $message .= ' Processing typically takes 1-3 business days. Check your dashboard for updates.';
+
+            $message = 'Withdrawal request of $' . number_format($withdrawalAmount, 2) . ' via ' . $paymentMethod . ' has been submitted for approval.';
+            if ($withdrawalFee > 0) {
+                $message .= ' Processing fee of $' . number_format($withdrawalFee, 2) . ' has been deducted from your wallet immediately.';
+            }
+            $message .= ' You will receive your withdrawal funds once the admin approves your request.';
 
             session()->flash('success', $message);
 
             return redirect()->route('wallet.transactions');
 
         } catch (\Exception $e) {
+            \Log::error('Withdrawal request failed', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->back()->withErrors(['general' => 'Withdrawal request failed. Please try again later.']);
         }
     }

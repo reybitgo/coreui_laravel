@@ -221,11 +221,6 @@
 
                             <!-- Actions -->
                             <div class="d-flex gap-2">
-                                @if($log['level'] == 'CRITICAL' || $log['level'] == 'ERROR')
-                                    <button onclick="investigateLog({{ $log['id'] }})" class="btn btn-sm btn-outline-danger">
-                                        Investigate
-                                    </button>
-                                @endif
                                 <button onclick="viewLogDetails({{ json_encode($log) }})" class="btn btn-sm btn-outline-primary">
                                     Details
                                 </button>
@@ -345,11 +340,6 @@ function viewLogDetails(log) {
     modal.show();
 }
 
-function investigateLog(logId) {
-    if (confirm('Mark this log entry for investigation?')) {
-        showAlert(`Log entry ${logId} has been flagged for investigation`, 'success');
-    }
-}
 
 function exportLogs(format) {
     showAlert(`Logs export started. ${format.toUpperCase()} file will be generated shortly.`, 'success');

@@ -28,18 +28,39 @@
     </div>
 </div>
 
-<!-- Current Balance Card -->
+<!-- Balance Information Cards -->
 <div class="row mb-4">
-    <div class="col-md-6 mx-auto">
-        <div class="card bg-danger-gradient text-white">
+    <div class="col-md-6">
+        <div class="card bg-primary-gradient text-white">
             <div class="card-body text-center">
-                <h5 class="card-title">Available Balance</h5>
-                <h2 class="display-4 fw-bold">${{ number_format($wallet->balance, 2) }}</h2>
+                <h5 class="card-title">Wallet Balance</h5>
+                <h2 class="display-5 fw-bold">${{ number_format($wallet->balance, 2) }}</h2>
                 <p class="mb-0">
                     <span class="badge {{ $wallet->is_active ? 'bg-light text-success' : 'bg-warning text-dark' }}">
                         {{ $wallet->is_active ? 'Account Active' : 'Account Frozen' }}
                     </span>
                 </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card {{ $availableBalance > 0 ? 'bg-success-gradient' : 'bg-warning-gradient' }} text-white">
+            <div class="card-body text-center">
+                <h5 class="card-title">Available for Withdrawal</h5>
+                <h2 class="display-5 fw-bold">${{ number_format($availableBalance, 2) }}</h2>
+                @if($pendingWithdrawals > 0)
+                    <p class="mb-0 small">
+                        <span class="badge bg-light text-dark">
+                            ${{ number_format($pendingWithdrawals, 2) }} pending approval
+                        </span>
+                    </p>
+                @else
+                    <p class="mb-0 small">
+                        <span class="badge bg-light text-success">
+                            No pending withdrawals
+                        </span>
+                    </p>
+                @endif
             </div>
         </div>
     </div>
@@ -57,13 +78,28 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                    @foreach([25, 50, 100, 250, 500, 1000] as $quickAmount)
-                        @if($wallet->balance >= $quickAmount)
+                    @php
+                        $quickAmounts = [5, 10, 25, 50, 100, 250, 500, 1000];
+                        $hasQuickAmounts = false;
+                    @endphp
+                    @foreach($quickAmounts as $quickAmount)
+                        @if($availableBalance >= $quickAmount)
+                            @php $hasQuickAmounts = true; @endphp
                             <button type="button" class="btn btn-outline-danger" onclick="setAmount({{ $quickAmount }})">
                                 ${{ $quickAmount }}
                             </button>
                         @endif
                     @endforeach
+
+                    @if(!$hasQuickAmounts)
+                        <div class="text-center text-muted">
+                            <i class="icon-info me-2"></i>
+                            No quick amounts available. Available balance: ${{ number_format($availableBalance, 2) }}
+                            @if($pendingWithdrawals > 0)
+                                <br><small>You have ${{ number_format($pendingWithdrawals, 2) }} in pending withdrawals</small>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -77,20 +113,6 @@
             <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
         </svg>
         {{ session('success') }}
-        <button type="button" class="btn-close" data-coreui-dismiss="alert"></button>
-    </div>
-@endif
-
-@if ($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <svg class="icon me-2">
-            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
-        </svg>
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
         <button type="button" class="btn-close" data-coreui-dismiss="alert"></button>
     </div>
 @endif
@@ -132,102 +154,177 @@
 
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="bank_name" class="form-label">
-                                    <svg class="icon me-2">
-                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-bank') }}"></use>
-                                    </svg>
-                                    Bank Name
-                                </label>
-                                <select id="bank_name" name="bank_name" class="form-select" required>
-                                    <option value="">Select your bank</option>
-                                    <option value="chase" {{ old('bank_name') == 'chase' ? 'selected' : '' }}>Chase Bank</option>
-                                    <option value="bofa" {{ old('bank_name') == 'bofa' ? 'selected' : '' }}>Bank of America</option>
-                                    <option value="wells_fargo" {{ old('bank_name') == 'wells_fargo' ? 'selected' : '' }}>Wells Fargo</option>
-                                    <option value="citibank" {{ old('bank_name') == 'citibank' ? 'selected' : '' }}>Citibank</option>
-                                    <option value="us_bank" {{ old('bank_name') == 'us_bank' ? 'selected' : '' }}>US Bank</option>
-                                    <option value="pnc" {{ old('bank_name') == 'pnc' ? 'selected' : '' }}>PNC Bank</option>
-                                    <option value="capital_one" {{ old('bank_name') == 'capital_one' ? 'selected' : '' }}>Capital One</option>
-                                    <option value="td_bank" {{ old('bank_name') == 'td_bank' ? 'selected' : '' }}>TD Bank</option>
-                                    <option value="other" {{ old('bank_name') == 'other' ? 'selected' : '' }}>Other</option>
-                                </select>
-                                <div class="form-text">
-                                    Select your bank for faster processing
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="bank_account" class="form-label">
+                                <label for="payment_method" class="form-label">
                                     <svg class="icon me-2">
                                         <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-credit-card') }}"></use>
                                     </svg>
-                                    Bank Account Number
+                                    Payment Method
                                 </label>
-                                <input type="text" name="bank_account" id="bank_account" class="form-control"
-                                       placeholder="1234567890123456" minlength="10" maxlength="20" required
-                                       value="{{ old('bank_account') }}">
+                                <select id="payment_method" name="payment_method" class="form-select" required>
+                                    <option value="">Select payment method</option>
+                                    @if($paymentSettings['gcash_enabled'])
+                                        <option value="Gcash" {{ old('payment_method') == 'Gcash' ? 'selected' : '' }}>Gcash</option>
+                                    @endif
+                                    @if($paymentSettings['maya_enabled'])
+                                        <option value="Maya" {{ old('payment_method') == 'Maya' ? 'selected' : '' }}>Maya</option>
+                                    @endif
+                                    @if($paymentSettings['cash_enabled'])
+                                        <option value="Cash" {{ old('payment_method') == 'Cash' ? 'selected' : '' }}>Cash</option>
+                                    @endif
+                                    @if($paymentSettings['allow_others'])
+                                        <option value="Others" {{ old('payment_method') == 'Others' ? 'selected' : '' }}>Others</option>
+                                    @endif
+                                </select>
+                                <input type="text" id="custom_payment_method" name="custom_payment_method" class="form-control d-none mt-2"
+                                       placeholder="Please type payment method" value="{{ old('custom_payment_method') }}">
                                 <div class="form-text">
-                                    Enter your bank account number (10-20 digits)
+                                    Select your preferred withdrawal method
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="routing_number" class="form-label">
+                    <!-- Fee Breakdown Section -->
+                    @if($withdrawalFeeSettings['fee_enabled'])
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-header">
                                     <svg class="icon me-2">
-                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-sort-numeric-down') }}"></use>
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-calculator') }}"></use>
                                     </svg>
-                                    Routing Number (Optional)
+                                    <strong>Fee Breakdown</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div id="fee-breakdown" class="d-none">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Withdrawal Amount:</span>
+                                                    <span id="withdrawal-amount-display">$0.00</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="d-flex justify-content-between">
+                                                    <span>Processing Fee:</span>
+                                                    <span id="fee-amount-display">$0.00</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="d-flex justify-content-between border-top pt-2">
+                                                    <strong>Total Deducted:</strong>
+                                                    <strong id="total-amount-display">$0.00</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-12">
+                                                <small class="text-muted">
+                                                    Fee calculation:
+                                                    @if($withdrawalFeeSettings['fee_type'] === 'percentage')
+                                                        {{ $withdrawalFeeSettings['fee_value'] }}% of withdrawal amount
+                                                        @if($withdrawalFeeSettings['minimum_fee'] > 0 || $withdrawalFeeSettings['maximum_fee'] < 999999)
+                                                            (Min: ${{ number_format($withdrawalFeeSettings['minimum_fee'], 2) }}, Max: ${{ number_format($withdrawalFeeSettings['maximum_fee'], 2) }})
+                                                        @endif
+                                                    @else
+                                                        Fixed fee of ${{ number_format($withdrawalFeeSettings['fee_value'], 2) }}
+                                                    @endif
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="fee-prompt" class="text-center text-muted">
+                                        <i class="icon-info me-2"></i>
+                                        Enter a withdrawal amount to see the fee breakdown
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Gcash Details -->
+                    <div id="gcash_details" class="row d-none mt-4">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="gcash_number" class="form-label">
+                                    <svg class="icon me-2">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-mobile') }}"></use>
+                                    </svg>
+                                    Your Gcash Number
                                 </label>
-                                <input type="text" name="routing_number" id="routing_number" class="form-control"
-                                       placeholder="123456789" maxlength="9"
-                                       value="{{ old('routing_number') }}">
+                                <input type="text" name="gcash_number" id="gcash_number" class="form-control"
+                                       placeholder="09171234567" maxlength="11"
+                                       value="{{ old('gcash_number') }}">
                                 <div class="form-text">
-                                    9-digit routing number for faster processing (optional)
+                                    Enter your Gcash mobile number where you want to receive the funds
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Withdrawal Summary -->
-                    <div id="withdrawal-fee-info" class="card bg-info-subtle border-info mb-3 d-none">
-                        <div class="card-body">
-                            <h6 class="card-title">
-                                <svg class="icon me-2">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-calculator') }}"></use>
-                                </svg>
-                                Withdrawal Summary
-                            </h6>
-                            <div class="row text-center">
-                                <div class="col-4">
-                                    <div class="text-body-secondary small">Withdrawal Amount</div>
-                                    <div class="fw-bold" id="withdrawal-amount-display">$0.00</div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="text-body-secondary small">Processing Fee</div>
-                                    <div class="fw-bold text-warning" id="withdrawal-fee-display">$0.00</div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="text-body-secondary small">Total Deducted</div>
-                                    <div class="fw-bold text-danger" id="total-deducted-display">$0.00</div>
+                    <!-- Maya Details -->
+                    <div id="maya_details" class="row d-none mt-4">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="maya_number" class="form-label">
+                                    <svg class="icon me-2">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-mobile') }}"></use>
+                                    </svg>
+                                    Your Maya Number
+                                </label>
+                                <input type="text" name="maya_number" id="maya_number" class="form-control"
+                                       placeholder="09171234567" maxlength="11"
+                                       value="{{ old('maya_number') }}">
+                                <div class="form-text">
+                                    Enter your Maya mobile number where you want to receive the funds
                                 </div>
                             </div>
-                            <hr>
-                            <p class="small mb-0 text-info">
-                                <svg class="icon me-1">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-info') }}"></use>
-                                </svg>
-                                <strong>Note:</strong> Processing fee is non-refundable and deducted immediately.
-                            </p>
                         </div>
                     </div>
+
+                    <!-- Cash Pickup Details -->
+                    <div id="cash_details" class="row d-none mt-4">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="pickup_location" class="form-label">
+                                    <svg class="icon me-2">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-location-pin') }}"></use>
+                                    </svg>
+                                    Preferred Pickup Location
+                                </label>
+                                <input type="text" name="pickup_location" id="pickup_location" class="form-control"
+                                       placeholder="Enter your preferred cash pickup location"
+                                       value="{{ old('pickup_location') }}">
+                                <div class="form-text">
+                                    Specify where you'd like to pick up your cash withdrawal
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Payment Method Details -->
+                    <div id="other_details" class="row d-none mt-4">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="payment_details" class="form-label">
+                                    <svg class="icon me-2">
+                                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-info') }}"></use>
+                                    </svg>
+                                    Payment Details
+                                </label>
+                                <textarea name="payment_details" id="payment_details" class="form-control" rows="3"
+                                          placeholder="Enter your payment method details (account numbers, instructions, etc.)">{{ old('payment_details') }}</textarea>
+                                <div class="form-text">
+                                    Provide detailed information about your payment method and account details
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
                     <!-- Important Information -->
-                    <div class="alert alert-warning">
+                    <div class="alert alert-warning mt-4">
                         <h6 class="alert-heading">
                             <svg class="icon me-2">
                                 <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-warning') }}"></use>
@@ -235,10 +332,14 @@
                             Important Information
                         </h6>
                         <ul class="mb-0">
-                            <li>Withdrawals require admin approval and typically take 1-3 business days to process</li>
-                            <li>Please verify your bank account details are correct to avoid delays</li>
-                            <li>Funds will be deducted from your wallet immediately upon submission</li>
-                            <li>Processing fees may apply based on your bank and withdrawal amount</li>
+                            <li>All withdrawals require admin approval and are processed manually</li>
+                            @if($withdrawalFeeSettings['fee_enabled'])
+                                <li><strong>Processing fees are deducted immediately upon submission and are non-refundable</strong></li>
+                                <li>If your withdrawal is rejected, only the withdrawal amount will be returned to your wallet</li>
+                            @endif
+                            <li>Please verify your payment method details are correct to avoid delays</li>
+                            <li>Processing typically takes 1-3 business days depending on your chosen method</li>
+                            <li>Ensure your Gcash/Maya accounts are active and can receive funds</li>
                         </ul>
                     </div>
 
@@ -249,14 +350,17 @@
                             <strong>I confirm and authorize this withdrawal</strong>
                         </label>
                         <div class="form-text">
-                            I confirm that the bank account details are correct and authorize this withdrawal from my e-wallet.
-                            I understand that this transaction cannot be reversed once processed.
+                            I confirm that my payment method details are correct and authorize this withdrawal from my e-wallet.
+                            @if($withdrawalFeeSettings['fee_enabled'])
+                            I understand that processing fees will be deducted immediately upon submission and are non-refundable.
+                            @endif
+                            I understand that this transaction cannot be reversed once processed and requires admin approval.
                         </div>
                     </div>
 
                     <div class="d-grid gap-2 d-md-flex">
-                        <button type="submit" class="btn btn-danger btn-lg flex-md-fill"
-                                {{ !$wallet->is_active || $wallet->balance <= 0 ? 'disabled' : '' }}>
+                        <button type="submit" id="submit-withdrawal-btn" class="btn btn-danger btn-lg flex-md-fill" disabled
+                                {{ !$wallet->is_active || $wallet->balance <= 0 ? 'data-wallet-disabled="true"' : '' }}>
                             <svg class="icon me-2">
                                 <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-minus') }}"></use>
                             </svg>
@@ -277,55 +381,157 @@
 
 @push('scripts')
 <script>
-    // Withdrawal fee settings from backend
-    const withdrawalSettings = @json($withdrawalSettings);
+    // Withdrawal fee settings
+    const withdrawalFeeSettings = {
+        fee_enabled: {{ $withdrawalFeeSettings['fee_enabled'] ? 'true' : 'false' }},
+        fee_type: '{{ $withdrawalFeeSettings['fee_type'] }}',
+        fee_value: {{ $withdrawalFeeSettings['fee_value'] }},
+        minimum_fee: {{ $withdrawalFeeSettings['minimum_fee'] }},
+        maximum_fee: {{ $withdrawalFeeSettings['maximum_fee'] }}
+    };
 
     function setAmount(amount) {
         document.getElementById('amount').value = amount;
-        updateWithdrawalSummary();
+        calculateFees(); // Update fees when quick amount is selected
     }
 
-    function calculateWithdrawalFee(amount) {
-        if (!withdrawalSettings.fee_enabled || amount <= 0) {
-            return 0;
-        }
-
-        let fee = 0;
-        if (withdrawalSettings.fee_type === 'percentage') {
-            fee = (amount * withdrawalSettings.fee_value) / 100;
-        } else {
-            fee = parseFloat(withdrawalSettings.fee_value);
-        }
-
-        // Apply min/max limits
-        fee = Math.max(fee, parseFloat(withdrawalSettings.minimum_fee));
-        fee = Math.min(fee, parseFloat(withdrawalSettings.maximum_fee));
-
-        return Math.round(fee * 100) / 100; // Round to 2 decimal places
-    }
-
-    function updateWithdrawalSummary() {
+    function calculateFees() {
         const amountInput = document.getElementById('amount');
         const amount = parseFloat(amountInput.value) || 0;
 
-        if (amount > 0) {
-            const fee = calculateWithdrawalFee(amount);
-            const total = amount + fee;
+        if (!withdrawalFeeSettings.fee_enabled || amount <= 0) {
+            document.getElementById('fee-breakdown').classList.add('d-none');
+            document.getElementById('fee-prompt').classList.remove('d-none');
+            return;
+        }
 
-            document.getElementById('withdrawal-amount-display').textContent = '$' + amount.toFixed(2);
-            document.getElementById('withdrawal-fee-display').textContent = '$' + fee.toFixed(2);
-            document.getElementById('total-deducted-display').textContent = '$' + total.toFixed(2);
-            document.getElementById('withdrawal-fee-info').classList.remove('d-none');
+        // Calculate fee
+        let fee = 0;
+        if (withdrawalFeeSettings.fee_type === 'percentage') {
+            fee = (amount * withdrawalFeeSettings.fee_value) / 100;
         } else {
-            document.getElementById('withdrawal-fee-info').classList.add('d-none');
+            fee = withdrawalFeeSettings.fee_value;
+        }
+
+        // Apply min/max limits
+        fee = Math.max(fee, withdrawalFeeSettings.minimum_fee);
+        fee = Math.min(fee, withdrawalFeeSettings.maximum_fee);
+        fee = Math.round(fee * 100) / 100; // Round to 2 decimal places
+
+        const totalAmount = amount + fee;
+
+        // Update display
+        document.getElementById('withdrawal-amount-display').textContent = '$' + amount.toFixed(2);
+        document.getElementById('fee-amount-display').textContent = '$' + fee.toFixed(2);
+        document.getElementById('total-amount-display').textContent = '$' + totalAmount.toFixed(2);
+
+        // Show breakdown
+        document.getElementById('fee-breakdown').classList.remove('d-none');
+        document.getElementById('fee-prompt').classList.add('d-none');
+    }
+
+    function togglePaymentDetails() {
+        const paymentMethod = document.getElementById('payment_method').value;
+        const customPaymentMethod = document.getElementById('custom_payment_method');
+        const gcashDetails = document.getElementById('gcash_details');
+        const mayaDetails = document.getElementById('maya_details');
+        const cashDetails = document.getElementById('cash_details');
+        const otherDetails = document.getElementById('other_details');
+
+        // Hide all detail sections first
+        gcashDetails.classList.add('d-none');
+        mayaDetails.classList.add('d-none');
+        cashDetails.classList.add('d-none');
+        otherDetails.classList.add('d-none');
+        customPaymentMethod.classList.add('d-none');
+
+        // Clear required attributes
+        document.getElementById('gcash_number').removeAttribute('required');
+        document.getElementById('maya_number').removeAttribute('required');
+        document.getElementById('pickup_location').removeAttribute('required');
+        document.getElementById('payment_details').removeAttribute('required');
+        customPaymentMethod.removeAttribute('required');
+
+        // Show relevant section based on selection
+        if (paymentMethod === 'Gcash') {
+            gcashDetails.classList.remove('d-none');
+            document.getElementById('gcash_number').setAttribute('required', 'required');
+        } else if (paymentMethod === 'Maya') {
+            mayaDetails.classList.remove('d-none');
+            document.getElementById('maya_number').setAttribute('required', 'required');
+        } else if (paymentMethod === 'Cash') {
+            cashDetails.classList.remove('d-none');
+            document.getElementById('pickup_location').setAttribute('required', 'required');
+        } else if (paymentMethod === 'Others') {
+            customPaymentMethod.classList.remove('d-none');
+            otherDetails.classList.remove('d-none');
+            customPaymentMethod.setAttribute('required', 'required');
+            document.getElementById('payment_details').setAttribute('required', 'required');
         }
     }
 
     // Add event listeners
     document.addEventListener('DOMContentLoaded', function() {
+        const paymentMethodSelect = document.getElementById('payment_method');
+
+        paymentMethodSelect.addEventListener('change', togglePaymentDetails);
+
+        // Add amount input listener for fee calculation
         const amountInput = document.getElementById('amount');
-        amountInput.addEventListener('input', updateWithdrawalSummary);
-        amountInput.addEventListener('change', updateWithdrawalSummary);
+        amountInput.addEventListener('input', calculateFees);
+        amountInput.addEventListener('change', calculateFees);
+
+        // Handle terms agreement checkbox
+        const agreeTermsCheckbox = document.getElementById('agree_terms');
+        const submitButton = document.getElementById('submit-withdrawal-btn');
+
+        function updateSubmitButton() {
+            const isWalletDisabled = submitButton.hasAttribute('data-wallet-disabled');
+            const isTermsChecked = agreeTermsCheckbox.checked;
+
+            if (isWalletDisabled) {
+                // If wallet is disabled, keep button disabled regardless of checkbox
+                submitButton.disabled = true;
+            } else {
+                // Enable button only if terms are checked
+                submitButton.disabled = !isTermsChecked;
+            }
+        }
+
+        agreeTermsCheckbox.addEventListener('change', updateSubmitButton);
+
+        // Initialize on page load if there's an old value
+        if (paymentMethodSelect.value) {
+            togglePaymentDetails();
+        }
+
+        // Calculate fees on initial load if amount is already set
+        calculateFees();
+
+        // Initialize submit button state
+        updateSubmitButton();
+
+        // Form validation
+        const form = document.getElementById('withdraw-form');
+        form.addEventListener('submit', function(e) {
+            console.log('Form submission started');
+            const paymentMethodSelect = document.getElementById('payment_method').value;
+            const customPaymentMethod = document.getElementById('custom_payment_method').value;
+            const paymentMethod = paymentMethodSelect || customPaymentMethod;
+
+            console.log('Payment method select:', paymentMethodSelect);
+            console.log('Custom payment method:', customPaymentMethod);
+            console.log('Final payment method:', paymentMethod);
+
+            if (!paymentMethod) {
+                e.preventDefault();
+                alert('Please select a payment method.');
+                return false;
+            }
+
+            console.log('Form validation passed, submitting...');
+            return true;
+        });
     });
 </script>
 @endpush

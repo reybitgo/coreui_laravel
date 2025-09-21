@@ -87,6 +87,51 @@
     </div>
 </div>
 
+<!-- Additional Transaction Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-4">
+        <div class="card text-white bg-success-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">{{ $approvedTransactions ?? 0 }}</div>
+                    <div>Approved Transactions</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-4">
+        <div class="card text-white bg-danger-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">{{ $rejectedTransactions ?? 0 }}</div>
+                    <div>Rejected Transactions</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-4">
+        <div class="card text-white bg-info-gradient">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold">{{ ($pendingTransactions + $approvedTransactions + $rejectedTransactions) ?? 0 }}</div>
+                    <div>Total Transactions</div>
+                </div>
+                <svg class="icon icon-3xl">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-list') }}"></use>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- User Wallets Table -->
 <div class="card mb-4">
     <div class="card-header">
@@ -235,6 +280,175 @@
                 </div>
             @endforelse
         </div>
+    </div>
+</div>
+
+<!-- All Transactions Section -->
+<div class="card mt-4">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <svg class="icon me-2">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-list') }}"></use>
+                </svg>
+                <strong>All Transactions</strong>
+                <small class="text-body-secondary ms-2">Complete transaction history with filtering options</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card-body border-bottom">
+        <form method="GET" action="{{ route('admin.wallet.management') }}" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Status Filter</label>
+                <select id="status" name="status" class="form-select">
+                    <option value="all" {{ $statusFilter == 'all' ? 'selected' : '' }}>All Statuses</option>
+                    <option value="pending" {{ $statusFilter == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="approved" {{ $statusFilter == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="rejected" {{ $statusFilter == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="type" class="form-label">Type Filter</label>
+                <select id="type" name="type" class="form-select">
+                    <option value="all" {{ $typeFilter == 'all' ? 'selected' : '' }}>All Types</option>
+                    <option value="deposit" {{ $typeFilter == 'deposit' ? 'selected' : '' }}>Deposits</option>
+                    <option value="withdrawal" {{ $typeFilter == 'withdrawal' ? 'selected' : '' }}>Withdrawals</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <svg class="icon me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-filter') }}"></use>
+                        </svg>
+                        Filter
+                    </button>
+                    <a href="{{ route('admin.wallet.management') }}" class="btn btn-secondary">
+                        <svg class="icon me-1">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-reload') }}"></use>
+                        </svg>
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="card-body p-0">
+        @if($allTransactions->count() > 0)
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Transaction</th>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($allTransactions as $transaction)
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-3 {{ $transaction->type === 'deposit' ? 'bg-success' : ($transaction->type === 'withdrawal' ? 'bg-danger' : 'bg-primary') }}">
+                                            <svg class="icon text-white">
+                                                @if($transaction->type === 'deposit')
+                                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-plus') }}"></use>
+                                                @elseif($transaction->type === 'withdrawal')
+                                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-minus') }}"></use>
+                                                @else
+                                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-swap-horizontal') }}"></use>
+                                                @endif
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ ucfirst($transaction->type) }} Request</div>
+                                            <div class="text-body-secondary small">
+                                                Ref: {{ $transaction->reference_number ?? 'N/A' }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ $transaction->user->fullname ?? $transaction->user->username }}</div>
+                                    <div class="text-body-secondary">{{ $transaction->user->email }}</div>
+                                    @if($transaction->user->wallet)
+                                        <div class="text-body-secondary small">Balance: ${{ number_format($transaction->user->wallet->balance, 2) }}</div>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="fw-semibold {{ $transaction->type === 'deposit' ? 'text-success' : 'text-danger' }}">
+                                        {{ $transaction->type === 'withdrawal' ? '-' : '+' }}${{ number_format($transaction->amount, 2) }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ ucfirst($transaction->payment_method ?? 'N/A') }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge
+                                        @if($transaction->status == 'approved') bg-success
+                                        @elseif($transaction->status == 'rejected') bg-danger
+                                        @elseif($transaction->status == 'pending') bg-warning
+                                        @else bg-secondary @endif">
+                                        {{ ucfirst($transaction->status) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ $transaction->created_at->format('M d, Y') }}</div>
+                                    <div class="text-body-secondary">{{ $transaction->created_at->format('h:i A') }}</div>
+                                </td>
+                                <td class="text-center">
+                                    @if($transaction->status === 'pending')
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ route('admin.transaction.approval') }}" class="btn btn-sm btn-outline-primary" title="Go to Transaction Approval">
+                                                <svg class="icon">
+                                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-external-link') }}"></use>
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted">
+                        Showing {{ $allTransactions->firstItem() ?? 0 }} to {{ $allTransactions->lastItem() ?? 0 }}
+                        of {{ $allTransactions->total() }} transactions
+                    </div>
+                    {{ $allTransactions->links() }}
+                </div>
+            </div>
+        @else
+            <div class="text-center py-5">
+                <svg class="icon icon-3xl text-body-secondary mb-3">
+                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-inbox') }}"></use>
+                </svg>
+                <h5 class="text-body-secondary">No transactions found</h5>
+                <p class="text-body-secondary mb-0">
+                    @if($statusFilter !== 'all' || $typeFilter !== 'all')
+                        Try adjusting your filters to see more results.
+                    @else
+                        No transactions have been created yet.
+                    @endif
+                </p>
+            </div>
+        @endif
     </div>
 </div>
 @endsection

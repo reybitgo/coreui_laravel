@@ -64,11 +64,17 @@
 
                 @if($errors->any())
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <ul class="mb-0">
+                        <svg class="icon me-2">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
+                        </svg>
+                        @if($errors->count() === 1)
+                            {{ $errors->first() }}
+                        @else
+                            <div class="fw-bold mb-2">Please correct the following issues:</div>
                             @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
+                                <div class="mb-1">• {{ $error }}</div>
                             @endforeach
-                        </ul>
+                        @endif
                         <button type="button" class="btn-close" data-coreui-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif

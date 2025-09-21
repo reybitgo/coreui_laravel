@@ -58,6 +58,12 @@
                         </svg>
                         Wallet Settings
                     </a>
+                    <a href="#payment-methods" onclick="showSection('payment-methods')" class="settings-nav-item list-group-item list-group-item-action">
+                        <svg class="icon me-3">
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-credit-card') }}"></use>
+                        </svg>
+                        Payment Methods
+                    </a>
                     <a href="#notifications" onclick="showSection('notifications')" class="settings-nav-item list-group-item list-group-item-action">
                         <svg class="icon me-3">
                             <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-bell') }}"></use>
@@ -430,6 +436,154 @@
                 </div>
             </div>
         </div>
+
+        <!-- Payment Methods Section -->
+        <div id="payment-methods-section" class="settings-section d-none">
+            <div class="card">
+                <div class="card-header">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-credit-card') }}"></use>
+                    </svg>
+                    <strong>Payment Methods Configuration</strong>
+                </div>
+                <div class="card-body">
+                    <form>
+                    <div class="row mb-4">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <svg class="icon me-2">
+                                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-money') }}"></use>
+                                        </svg>
+                                        Gcash Settings
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="gcash_enabled" name="gcash_enabled" value="1"
+                                                   {{ old('gcash_enabled', $paymentSettings['gcash_enabled'] ?? true) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="gcash_enabled">
+                                                Enable Gcash Payment Method
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Allow users to select Gcash as a payment method</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="gcash_number" class="form-label">Gcash Number</label>
+                                        <input type="text" class="form-control" id="gcash_number" name="gcash_number"
+                                               value="{{ old('gcash_number', $paymentSettings['gcash_number'] ?? '') }}"
+                                               placeholder="09XX XXX XXXX">
+                                        <small class="text-muted">The Gcash number where users should send their deposits</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="gcash_name" class="form-label">Account Name (Optional)</label>
+                                        <input type="text" class="form-control" id="gcash_name" name="gcash_name"
+                                               value="{{ old('gcash_name', $paymentSettings['gcash_name'] ?? '') }}"
+                                               placeholder="Account holder name">
+                                        <small class="text-muted">The name registered to the Gcash account</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <svg class="icon me-2">
+                                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-credit-card') }}"></use>
+                                        </svg>
+                                        Maya Settings
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="maya_enabled" name="maya_enabled" value="1"
+                                                   {{ old('maya_enabled', $paymentSettings['maya_enabled'] ?? true) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="maya_enabled">
+                                                Enable Maya Payment Method
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Allow users to select Maya as a payment method</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="maya_number" class="form-label">Maya Number</label>
+                                        <input type="text" class="form-control" id="maya_number" name="maya_number"
+                                               value="{{ old('maya_number', $paymentSettings['maya_number'] ?? '') }}"
+                                               placeholder="09XX XXX XXXX">
+                                        <small class="text-muted">The Maya number where users should send their deposits</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="maya_name" class="form-label">Account Name (Optional)</label>
+                                        <input type="text" class="form-control" id="maya_name" name="maya_name"
+                                               value="{{ old('maya_name', $paymentSettings['maya_name'] ?? '') }}"
+                                               placeholder="Account holder name">
+                                        <small class="text-muted">The name registered to the Maya account</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <svg class="icon me-2">
+                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-settings') }}"></use>
+                                </svg>
+                                General Payment Settings
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="cash_enabled" name="cash_enabled" value="1"
+                                                   {{ old('cash_enabled', $paymentSettings['cash_enabled'] ?? true) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="cash_enabled">
+                                                Enable Cash Payment Method
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Allow users to select Cash as a payment method</small>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="others_enabled" name="others_enabled" value="1"
+                                                   {{ old('others_enabled', $paymentSettings['others_enabled'] ?? true) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="others_enabled">
+                                                Allow Custom Payment Methods
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Allow users to enter their own payment method (Others)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" onclick="saveSettings('payment-methods')" class="btn btn-success">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+                            </svg>
+                            Save Payment Methods Settings
+                        </button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -521,6 +675,46 @@ function saveSettings(category) {
         .then(data => {
             if (data.success) {
                 showAlert('Wallet settings updated successfully!', 'success');
+            } else {
+                showAlert('Error updating settings: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showAlert('Error updating settings. Please try again.', 'error');
+        });
+    } else if (category === 'payment-methods') {
+        // Get payment method settings values
+        const gcashEnabled = document.getElementById('gcash_enabled').checked;
+        const gcashNumber = document.getElementById('gcash_number').value;
+        const gcashName = document.getElementById('gcash_name').value;
+        const mayaEnabled = document.getElementById('maya_enabled').checked;
+        const mayaNumber = document.getElementById('maya_number').value;
+        const mayaName = document.getElementById('maya_name').value;
+        const cashEnabled = document.getElementById('cash_enabled').checked;
+        const othersEnabled = document.getElementById('others_enabled').checked;
+
+        // Send AJAX request to update payment method settings
+        fetch('{{ route("admin.system.settings.update") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                gcash_enabled: gcashEnabled,
+                gcash_number: gcashNumber,
+                gcash_name: gcashName,
+                maya_enabled: mayaEnabled,
+                maya_number: mayaNumber,
+                maya_name: mayaName,
+                cash_enabled: cashEnabled,
+                others_enabled: othersEnabled
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Payment methods settings updated successfully!', 'success');
             } else {
                 showAlert('Error updating settings: ' + data.message, 'error');
             }

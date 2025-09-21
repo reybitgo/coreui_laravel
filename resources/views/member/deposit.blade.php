@@ -110,22 +110,70 @@
                                 </label>
                                 <select id="payment_method" name="payment_method" class="form-select" required>
                                     <option value="">Select Payment Method</option>
-                                    <option value="bank_transfer" {{ old('payment_method') == 'bank_transfer' ? 'selected' : '' }}>
-                                        Bank Transfer (3-5 business days)
-                                    </option>
-                                    <option value="credit_card" {{ old('payment_method') == 'credit_card' ? 'selected' : '' }}>
-                                        Credit Card (Instant)
-                                    </option>
-                                    <option value="debit_card" {{ old('payment_method') == 'debit_card' ? 'selected' : '' }}>
-                                        Debit Card (Instant)
-                                    </option>
-                                    <option value="paypal" {{ old('payment_method') == 'paypal' ? 'selected' : '' }}>
-                                        PayPal (Instant)
-                                    </option>
+                                    @if($paymentMethods['gcash_enabled'])
+                                        <option value="gcash" {{ old('payment_method') == 'gcash' ? 'selected' : '' }}>
+                                            Gcash
+                                        </option>
+                                    @endif
+                                    @if($paymentMethods['maya_enabled'])
+                                        <option value="maya" {{ old('payment_method') == 'maya' ? 'selected' : '' }}>
+                                            Maya
+                                        </option>
+                                    @endif
+                                    @if($paymentMethods['cash_enabled'])
+                                        <option value="cash" {{ old('payment_method') == 'cash' ? 'selected' : '' }}>
+                                            Cash
+                                        </option>
+                                    @endif
+                                    @if($paymentMethods['others_enabled'])
+                                        <option value="others" {{ old('payment_method') == 'others' ? 'selected' : '' }}>
+                                            Others
+                                        </option>
+                                    @endif
                                 </select>
+                                <input type="text" id="custom_payment_method" class="form-control d-none"
+                                       placeholder="Please type payment method" value="{{ old('payment_method') }}">
                             </div>
                         </div>
                     </div>
+
+                    <!-- Gcash Information -->
+                    @if($paymentMethods['gcash_enabled'] && $paymentMethods['gcash_number'])
+                    <div id="gcash_info" class="alert alert-info d-none mb-3">
+                        <div class="d-flex align-items-start">
+                            <svg class="icon me-2 flex-shrink-0">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-mobile') }}"></use>
+                            </svg>
+                            <div>
+                                <h6 class="alert-heading">Gcash Payment Information</h6>
+                                <p class="mb-1"><strong>Gcash Number:</strong> {{ $paymentMethods['gcash_number'] }}</p>
+                                @if($paymentMethods['gcash_name'])
+                                    <p class="mb-1"><strong>Account Name:</strong> {{ $paymentMethods['gcash_name'] }}</p>
+                                @endif
+                                <p class="mb-0 small text-muted">Send your deposit to this Gcash number and type/paste Express Send Notification to Description below for faster approval process.</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Maya Information -->
+                    @if($paymentMethods['maya_enabled'] && $paymentMethods['maya_number'])
+                    <div id="maya_info" class="alert alert-success d-none mb-3">
+                        <div class="d-flex align-items-start">
+                            <svg class="icon me-2 flex-shrink-0">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-credit-card') }}"></use>
+                            </svg>
+                            <div>
+                                <h6 class="alert-heading">Maya Payment Information</h6>
+                                <p class="mb-1"><strong>Maya Number:</strong> {{ $paymentMethods['maya_number'] }}</p>
+                                @if($paymentMethods['maya_name'])
+                                    <p class="mb-1"><strong>Account Name:</strong> {{ $paymentMethods['maya_name'] }}</p>
+                                @endif
+                                <p class="mb-0 small text-muted">Send your deposit to this Maya number and type/paste Express Send Notification to Description below for faster approval process.</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="mb-3">
                         <label for="description" class="form-label">
@@ -138,52 +186,8 @@
                                   placeholder="Add a note for this deposit...">{{ old('description') }}</textarea>
                     </div>
 
-                    <!-- Fee Information -->
-                    <div class="alert alert-warning d-flex align-items-start mb-3">
-                        <svg class="icon me-2 flex-shrink-0">
-                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-warning') }}"></use>
-                        </svg>
-                        <div>
-                            <h6 class="alert-heading">Fee Information</h6>
-                            <ul class="mb-0 small">
-                                <li>Bank Transfer: No fees</li>
-                                <li>Credit/Debit Card: 2.9% + $0.30</li>
-                                <li>PayPal: 2.4% + $0.30</li>
-                            </ul>
-                        </div>
-                    </div>
 
-                    <!-- Security Notice -->
-                    <div class="alert alert-info d-flex align-items-start mb-3">
-                        <svg class="icon me-2 flex-shrink-0">
-                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-shield-alt') }}"></use>
-                        </svg>
-                        <div>
-                            <h6 class="alert-heading">Security & Processing</h6>
-                            <p class="mb-1">All transactions are encrypted using industry-standard SSL security.</p>
-                            <p class="mb-0 small">Your deposit will be reviewed and processed by our admin team. You'll receive an email confirmation once approved.</p>
-                        </div>
-                    </div>
 
-                    <!-- Estimated Total -->
-                    <div id="fee-calculation" class="card bg-light mb-3 d-none">
-                        <div class="card-body">
-                            <div class="row text-center">
-                                <div class="col-4">
-                                    <div class="text-body-secondary small">Deposit Amount</div>
-                                    <div class="fw-bold" id="deposit-amount">$0.00</div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="text-body-secondary small">Processing Fee</div>
-                                    <div class="fw-bold text-warning" id="processing-fee">$0.00</div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="text-body-secondary small">Total to Pay</div>
-                                    <div class="fw-bold text-primary" id="total-amount">$0.00</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="d-grid">
                         <button type="submit" class="btn btn-success btn-lg">
@@ -202,34 +206,59 @@
 <script>
 function setAmount(amount) {
     document.getElementById('amount').value = amount;
-    calculateFees();
 }
 
-function calculateFees() {
-    const amount = parseFloat(document.getElementById('amount').value) || 0;
-    const paymentMethod = document.getElementById('payment_method').value;
+function handlePaymentMethodChange() {
+    const select = document.getElementById('payment_method');
+    const input = document.getElementById('custom_payment_method');
+    const gcashInfo = document.getElementById('gcash_info');
+    const mayaInfo = document.getElementById('maya_info');
 
-    let fee = 0;
+    // Hide all payment info cards
+    if (gcashInfo) gcashInfo.classList.add('d-none');
+    if (mayaInfo) mayaInfo.classList.add('d-none');
 
-    if (paymentMethod === 'credit_card' || paymentMethod === 'debit_card') {
-        fee = amount * 0.029 + 0.30;
-    } else if (paymentMethod === 'paypal') {
-        fee = amount * 0.024 + 0.30;
-    }
-
-    const total = amount + fee;
-
-    if (amount > 0 && paymentMethod) {
-        document.getElementById('fee-calculation').classList.remove('d-none');
-        document.getElementById('deposit-amount').textContent = '$' + amount.toFixed(2);
-        document.getElementById('processing-fee').textContent = '$' + fee.toFixed(2);
-        document.getElementById('total-amount').textContent = '$' + total.toFixed(2);
+    if (select.value === 'others') {
+        // Hide select, show input
+        select.classList.add('d-none');
+        select.removeAttribute('name');
+        select.removeAttribute('required');
+        input.classList.remove('d-none');
+        input.setAttribute('name', 'payment_method');
+        input.setAttribute('required', 'required');
+        input.focus();
     } else {
-        document.getElementById('fee-calculation').classList.add('d-none');
+        // Show select, hide input
+        select.classList.remove('d-none');
+        select.setAttribute('name', 'payment_method');
+        select.setAttribute('required', 'required');
+        input.classList.add('d-none');
+        input.removeAttribute('name');
+        input.removeAttribute('required');
+        input.value = '';
+
+        // Show payment info based on selection
+        if (select.value === 'gcash' && gcashInfo) {
+            gcashInfo.classList.remove('d-none');
+        } else if (select.value === 'maya' && mayaInfo) {
+            mayaInfo.classList.remove('d-none');
+        }
     }
 }
 
-document.getElementById('amount').addEventListener('input', calculateFees);
-document.getElementById('payment_method').addEventListener('change', calculateFees);
+// Add event listener for payment method change
+document.getElementById('payment_method').addEventListener('change', handlePaymentMethodChange);
+
+// Handle case where "others" is pre-selected (from old input)
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('payment_method');
+    const input = document.getElementById('custom_payment_method');
+
+    // If old input has a custom value that's not in the select options
+    if (input.value && !['gcash', 'maya', 'cash', 'others', ''].includes(input.value)) {
+        select.value = 'others';
+        handlePaymentMethodChange();
+    }
+});
 </script>
 @endsection

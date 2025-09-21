@@ -4,7 +4,7 @@
 
 @section('content')
 <!-- Success/Error Messages -->
-<div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
+<div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1060;"></div>
 
 <!-- Page Header -->
 <div class="card mb-4">

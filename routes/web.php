@@ -47,9 +47,6 @@ Route::middleware(['auth', 'conditional.verified', 'role:admin'])->prefix('admin
     Route::post('/transactions/{id}/block', [AdminController::class, 'blockTransaction'])
         ->middleware('ewallet.security:transaction_approval')
         ->name('transactions.block');
-    Route::post('/transactions/{id}/investigate', [AdminController::class, 'investigateTransaction'])
-        ->middleware('ewallet.security:transaction_approval')
-        ->name('transactions.investigate');
     Route::post('/transactions/bulk-approval', [AdminController::class, 'bulkApproval'])
         ->middleware('ewallet.security:transaction_approval')
         ->name('transactions.bulk');
@@ -59,6 +56,9 @@ Route::middleware(['auth', 'conditional.verified', 'role:admin'])->prefix('admin
     Route::get('/transaction-stats', [AdminController::class, 'getTransactionStats'])
         ->middleware('ewallet.security:transaction_approval')
         ->name('transaction.stats');
+    Route::get('/transactions/{id}/details', [AdminController::class, 'getTransactionDetails'])
+        ->middleware('ewallet.security:transaction_approval')
+        ->name('transactions.details');
 
     // Logs Route
     Route::get('/logs', [AdminController::class, 'viewLogs'])

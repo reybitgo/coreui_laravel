@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Mail\DepositStatusNotification;
+use App\Mail\WithdrawalStatusNotification;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -65,7 +69,7 @@ class AdminController extends Controller
         ));
     }
 
-    public function walletManagement()
+    public function walletManagement(Request $request)
     {
         $this->authorize('wallet_management');
 
@@ -91,6 +95,26 @@ class AdminController extends Controller
             ->sum('amount');
 
         $pendingTransactions = Transaction::where('status', 'pending')->count();
+        $approvedTransactions = Transaction::where('status', 'approved')->count();
+        $rejectedTransactions = Transaction::where('status', 'rejected')->count();
+
+        // Get filter parameters
+        $statusFilter = $request->get('status', 'all');
+        $typeFilter = $request->get('type', 'all');
+
+        // Build transaction query with filters
+        $transactionsQuery = Transaction::with(['user', 'user.wallet']);
+
+        if ($statusFilter !== 'all') {
+            $transactionsQuery->where('status', $statusFilter);
+        }
+
+        if ($typeFilter !== 'all') {
+            $transactionsQuery->where('type', $typeFilter);
+        }
+
+        // Get paginated transactions
+        $allTransactions = $transactionsQuery->latest()->paginate(15)->appends($request->query());
 
         return view('admin.wallet-management', compact(
             'wallets',
@@ -100,7 +124,12 @@ class AdminController extends Controller
             'recentTransactions',
             'todayDeposits',
             'todayWithdrawals',
-            'pendingTransactions'
+            'pendingTransactions',
+            'approvedTransactions',
+            'rejectedTransactions',
+            'allTransactions',
+            'statusFilter',
+            'typeFilter'
         ));
     }
 
@@ -154,11 +183,24 @@ class AdminController extends Controller
         // Get system settings
         $settings = \App\Models\SystemSetting::all()->keyBy('key');
 
+        // Payment methods settings
+        $paymentSettings = [
+            'gcash_enabled' => \App\Models\SystemSetting::get('gcash_enabled', true),
+            'gcash_number' => \App\Models\SystemSetting::get('gcash_number', ''),
+            'gcash_name' => \App\Models\SystemSetting::get('gcash_name', ''),
+            'maya_enabled' => \App\Models\SystemSetting::get('maya_enabled', true),
+            'maya_number' => \App\Models\SystemSetting::get('maya_number', ''),
+            'maya_name' => \App\Models\SystemSetting::get('maya_name', ''),
+            'cash_enabled' => \App\Models\SystemSetting::get('cash_enabled', true),
+            'others_enabled' => \App\Models\SystemSetting::get('others_enabled', true),
+        ];
+
         return view('admin.system-settings', compact(
             'systemStats',
             'securitySettings',
             'transactionSettings',
-            'settings'
+            'settings',
+            'paymentSettings'
         ));
     }
 
@@ -247,10 +289,28 @@ class AdminController extends Controller
                 $wallet->addBalance($transaction->amount);
             }
 
+            // Update wallet balance for approved withdrawals
+            if ($transaction->type === 'withdrawal') {
+                $wallet = $transaction->user->getOrCreateWallet();
+                // Deduct the withdrawal amount (fee was already deducted upon submission)
+                $wallet->decrement('balance', $transaction->amount);
+            }
+
             // Note: For withdrawals, fee transactions are already auto-approved during request
-            // No additional fee processing needed on approval
+            // Only the withdrawal amount is deducted upon approval
 
             DB::commit();
+
+            // Send email notification to user based on transaction type
+            if ($transaction->type === 'deposit') {
+                Mail::to($transaction->user->email)->send(
+                    new DepositStatusNotification($transaction, $transaction->user, 'approved', $request->notes)
+                );
+            } elseif ($transaction->type === 'withdrawal') {
+                Mail::to($transaction->user->email)->send(
+                    new WithdrawalStatusNotification($transaction, $transaction->user, 'approved', $request->notes)
+                );
+            }
 
             return response()->json([
                 'success' => true,
@@ -307,6 +367,17 @@ class AdminController extends Controller
             }
 
             DB::commit();
+
+            // Send email notification to user based on transaction type
+            if ($transaction->type === 'deposit') {
+                Mail::to($transaction->user->email)->send(
+                    new DepositStatusNotification($transaction, $transaction->user, 'rejected', $request->reason)
+                );
+            } elseif ($transaction->type === 'withdrawal') {
+                Mail::to($transaction->user->email)->send(
+                    new WithdrawalStatusNotification($transaction, $transaction->user, 'rejected', $request->reason)
+                );
+            }
 
             return response()->json([
                 'success' => true,
@@ -365,17 +436,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function investigateTransaction(Request $request, $id)
-    {
-        $this->authorize('transaction_approval');
 
-        // Simulate investigation flag
-        return response()->json([
-            'success' => true,
-            'message' => 'Transaction flagged for investigation',
-            'transaction_id' => $id
-        ]);
-    }
 
     public function exportTransactionReport(Request $request)
     {
@@ -642,6 +703,15 @@ class AdminController extends Controller
             'withdrawal_fee_value' => 'numeric|min:0',
             'withdrawal_minimum_fee' => 'numeric|min:0',
             'withdrawal_maximum_fee' => 'numeric|min:0',
+            // Payment methods validation
+            'gcash_enabled' => 'boolean',
+            'gcash_number' => 'nullable|string|max:20',
+            'gcash_name' => 'nullable|string|max:100',
+            'maya_enabled' => 'boolean',
+            'maya_number' => 'nullable|string|max:20',
+            'maya_name' => 'nullable|string|max:100',
+            'cash_enabled' => 'boolean',
+            'others_enabled' => 'boolean',
         ]);
 
         // Update security settings
@@ -673,6 +743,32 @@ class AdminController extends Controller
             \App\Models\SystemSetting::set('withdrawal_maximum_fee', $request->input('withdrawal_maximum_fee', 50.00), 'string', 'Maximum withdrawal fee');
         }
 
+        // Update payment method settings
+        if ($request->has('gcash_enabled')) {
+            \App\Models\SystemSetting::set('gcash_enabled', $request->boolean('gcash_enabled'), 'boolean', 'Enable Gcash payment method');
+        }
+        if ($request->filled('gcash_number')) {
+            \App\Models\SystemSetting::set('gcash_number', $request->input('gcash_number'), 'string', 'Gcash account number');
+        }
+        if ($request->filled('gcash_name')) {
+            \App\Models\SystemSetting::set('gcash_name', $request->input('gcash_name'), 'string', 'Gcash account name');
+        }
+        if ($request->has('maya_enabled')) {
+            \App\Models\SystemSetting::set('maya_enabled', $request->boolean('maya_enabled'), 'boolean', 'Enable Maya payment method');
+        }
+        if ($request->filled('maya_number')) {
+            \App\Models\SystemSetting::set('maya_number', $request->input('maya_number'), 'string', 'Maya account number');
+        }
+        if ($request->filled('maya_name')) {
+            \App\Models\SystemSetting::set('maya_name', $request->input('maya_name'), 'string', 'Maya account name');
+        }
+        if ($request->has('cash_enabled')) {
+            \App\Models\SystemSetting::set('cash_enabled', $request->boolean('cash_enabled'), 'boolean', 'Enable Cash payment method');
+        }
+        if ($request->has('others_enabled')) {
+            \App\Models\SystemSetting::set('others_enabled', $request->boolean('others_enabled'), 'boolean', 'Allow custom payment methods');
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'System settings updated successfully.'
@@ -693,4 +789,42 @@ class AdminController extends Controller
             'total_value' => number_format($pendingTransactions->sum('amount'), 2)
         ]);
     }
+
+    public function getTransactionDetails($id)
+    {
+        $this->authorize('transaction_approval');
+
+        $transaction = Transaction::with(['user', 'user.wallet'])->find($id);
+
+        if (!$transaction) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'transaction' => [
+                'id' => $transaction->id,
+                'reference_number' => $transaction->reference_number,
+                'type' => $transaction->type,
+                'amount' => $transaction->amount,
+                'payment_method' => $transaction->payment_method,
+                'status' => $transaction->status,
+                'description' => $transaction->description,
+                'created_at' => $transaction->created_at->toISOString(),
+                'user' => [
+                    'id' => $transaction->user->id,
+                    'username' => $transaction->user->username,
+                    'fullname' => $transaction->user->fullname,
+                    'email' => $transaction->user->email,
+                    'wallet' => $transaction->user->wallet ? [
+                        'balance' => $transaction->user->wallet->balance
+                    ] : null
+                ]
+            ]
+        ]);
+    }
+
 }

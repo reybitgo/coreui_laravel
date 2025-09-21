@@ -4,7 +4,7 @@
 
 @section('content')
 <!-- Success/Error Messages -->
-<div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+<div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1060;"></div>
 
 <!-- Page Header -->
 <div class="card mb-4">
@@ -246,13 +246,39 @@
 
 <!-- CoreUI Modals -->
 <div class="modal fade" id="approvalModal" tabindex="-1" aria-labelledby="approvalModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="approvalModalLabel">Approve Transaction</h5>
+        <h5 class="modal-title" id="approvalModalLabel">
+          <svg class="icon me-2">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+          </svg>
+          Approve Transaction
+        </h5>
         <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <!-- Transaction Summary -->
+        <div class="alert alert-success border-success">
+          <h6 class="alert-heading">Transaction Summary</h6>
+          <div class="row">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Transaction ID:</strong> <span id="approve-transaction-id">-</span></p>
+              <p class="mb-1"><strong>Type:</strong> <span id="approve-type">-</span></p>
+              <p class="mb-1"><strong>Amount:</strong> <span id="approve-amount">-</span></p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>User:</strong> <span id="approve-user-name">-</span></p>
+              <p class="mb-1"><strong>Payment Method:</strong> <span id="approve-payment-method">-</span></p>
+              <p class="mb-1"><strong>Current Balance:</strong> <span id="approve-user-balance">-</span></p>
+            </div>
+          </div>
+          <div class="mt-2">
+            <p class="mb-0"><strong>Description:</strong></p>
+            <p class="mb-0 text-muted" id="approve-description">No description provided</p>
+          </div>
+        </div>
+
         <form id="approvalForm">
           <div class="mb-3">
             <label for="approvalNotes" class="form-label">Admin Notes (Optional)</label>
@@ -262,20 +288,51 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-success" onclick="confirmApproval()">Confirm Approval</button>
+        <button type="button" class="btn btn-success" onclick="confirmApproval()">
+          <svg class="icon me-1">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+          </svg>
+          Confirm Approval
+        </button>
       </div>
     </div>
   </div>
 </div>
 
 <div class="modal fade" id="rejectionModal" tabindex="-1" aria-labelledby="rejectionModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="rejectionModalLabel">Reject Transaction</h5>
+        <h5 class="modal-title" id="rejectionModalLabel">
+          <svg class="icon me-2">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
+          </svg>
+          Reject Transaction
+        </h5>
         <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <!-- Transaction Summary -->
+        <div class="alert alert-danger border-danger">
+          <h6 class="alert-heading">Transaction Summary</h6>
+          <div class="row">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Transaction ID:</strong> <span id="reject-transaction-id">-</span></p>
+              <p class="mb-1"><strong>Type:</strong> <span id="reject-type">-</span></p>
+              <p class="mb-1"><strong>Amount:</strong> <span id="reject-amount">-</span></p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>User:</strong> <span id="reject-user-name">-</span></p>
+              <p class="mb-1"><strong>Payment Method:</strong> <span id="reject-payment-method">-</span></p>
+              <p class="mb-1"><strong>Current Balance:</strong> <span id="reject-user-balance">-</span></p>
+            </div>
+          </div>
+          <div class="mt-2">
+            <p class="mb-0"><strong>Description:</strong></p>
+            <p class="mb-0 text-muted" id="reject-description">No description provided</p>
+          </div>
+        </div>
+
         <form id="rejectionForm">
           <div class="mb-3">
             <label for="rejectionReason" class="form-label">Rejection Reason (Required)</label>
@@ -285,7 +342,111 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-danger" onclick="confirmRejection()">Confirm Rejection</button>
+        <button type="button" class="btn btn-danger" onclick="confirmRejection()">
+          <svg class="icon me-1">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
+          </svg>
+          Confirm Rejection
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Review Transaction Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reviewModalLabel">
+          <svg class="icon me-2">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-magnifying-glass') }}"></use>
+          </svg>
+          Transaction Review
+        </h5>
+        <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-muted mb-3">Transaction Details</h6>
+            <table class="table table-borderless table-sm">
+              <tr>
+                <td class="text-muted">Transaction ID:</td>
+                <td class="fw-semibold" id="review-transaction-id">-</td>
+              </tr>
+              <tr>
+                <td class="text-muted">Reference Number:</td>
+                <td class="fw-semibold" id="review-reference-number">-</td>
+              </tr>
+              <tr>
+                <td class="text-muted">Type:</td>
+                <td>
+                  <span id="review-type-badge" class="badge">-</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-muted">Amount:</td>
+                <td class="fw-semibold" id="review-amount">-</td>
+              </tr>
+              <tr>
+                <td class="text-muted">Payment Method:</td>
+                <td class="fw-semibold" id="review-payment-method">-</td>
+              </tr>
+              <tr>
+                <td class="text-muted">Status:</td>
+                <td>
+                  <span id="review-status-badge" class="badge bg-warning">-</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-muted">Created:</td>
+                <td class="fw-semibold" id="review-created-at">-</td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-3">User Information</h6>
+            <table class="table table-borderless table-sm">
+              <tr>
+                <td class="text-muted">Name:</td>
+                <td class="fw-semibold" id="review-user-name">-</td>
+              </tr>
+              <tr>
+                <td class="text-muted">Email:</td>
+                <td class="fw-semibold" id="review-user-email">-</td>
+              </tr>
+              <tr>
+                <td class="text-muted">Current Balance:</td>
+                <td class="fw-semibold" id="review-user-balance">-</td>
+              </tr>
+              <tr>
+                <td class="text-muted">User ID:</td>
+                <td class="fw-semibold" id="review-user-id">-</td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted mb-3 mt-4">Transaction Description</h6>
+            <div class="border rounded p-3 bg-light">
+              <p class="mb-0" id="review-description">No description provided</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" onclick="rejectFromReview()">
+          <svg class="icon me-1">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-x') }}"></use>
+          </svg>
+          Reject
+        </button>
+        <button type="button" class="btn btn-success" onclick="approveFromReview()">
+          <svg class="icon me-1">
+            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-check') }}"></use>
+          </svg>
+          Approve
+        </button>
       </div>
     </div>
   </div>
@@ -298,18 +459,131 @@ let currentTransactionId = null;
 
 function approveTransaction(id) {
     currentTransactionId = id;
+    populateApprovalModal();
     const approvalModal = new coreui.Modal(document.getElementById('approvalModal'));
     approvalModal.show();
 }
 
 function rejectTransaction(id) {
     currentTransactionId = id;
+    populateRejectionModal();
     const rejectionModal = new coreui.Modal(document.getElementById('rejectionModal'));
     rejectionModal.show();
 }
 
 function reviewTransaction(id) {
-    alert(`Review functionality for transaction ${id} would be implemented here.`);
+    currentTransactionId = id;
+
+    // Fetch transaction details
+    fetch(`/admin/transactions/${id}/details`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                populateReviewModal(data.transaction);
+                const reviewModal = new coreui.Modal(document.getElementById('reviewModal'));
+                reviewModal.show();
+            } else {
+                showAlert('Error loading transaction details', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Error loading transaction details', 'error');
+        });
+}
+
+function populateReviewModal(transaction) {
+    document.getElementById('review-transaction-id').textContent = transaction.id;
+    document.getElementById('review-reference-number').textContent = transaction.reference_number || 'N/A';
+
+    // Type badge
+    const typeBadge = document.getElementById('review-type-badge');
+    typeBadge.textContent = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+    typeBadge.className = `badge ${transaction.type === 'deposit' ? 'bg-success' : 'bg-danger'}`;
+
+    document.getElementById('review-amount').textContent = `${transaction.type === 'withdrawal' ? '-' : '+'}$${parseFloat(transaction.amount).toFixed(2)}`;
+    document.getElementById('review-payment-method').textContent = transaction.payment_method || 'N/A';
+
+    // Status badge
+    const statusBadge = document.getElementById('review-status-badge');
+    statusBadge.textContent = transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1);
+
+    document.getElementById('review-created-at').textContent = new Date(transaction.created_at).toLocaleString();
+
+    // User information
+    document.getElementById('review-user-name').textContent = transaction.user.fullname || transaction.user.username;
+    document.getElementById('review-user-email').textContent = transaction.user.email;
+    document.getElementById('review-user-balance').textContent = transaction.user.wallet ? `$${parseFloat(transaction.user.wallet.balance).toFixed(2)}` : 'N/A';
+    document.getElementById('review-user-id').textContent = transaction.user.id;
+
+    // Description
+    document.getElementById('review-description').textContent = transaction.description || 'No description provided';
+}
+
+function approveFromReview() {
+    const reviewModal = coreui.Modal.getInstance(document.getElementById('reviewModal'));
+    reviewModal.hide();
+
+    // Show approval modal with pre-populated data
+    populateApprovalModal();
+    const approvalModal = new coreui.Modal(document.getElementById('approvalModal'));
+    approvalModal.show();
+}
+
+function rejectFromReview() {
+    const reviewModal = coreui.Modal.getInstance(document.getElementById('reviewModal'));
+    reviewModal.hide();
+
+    // Show rejection modal with pre-populated data
+    populateRejectionModal();
+    const rejectionModal = new coreui.Modal(document.getElementById('rejectionModal'));
+    rejectionModal.show();
+}
+
+function populateApprovalModal() {
+    // Fetch transaction details if not already loaded
+    if (!currentTransactionId) return;
+
+    fetch(`/admin/transactions/${currentTransactionId}/details`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const transaction = data.transaction;
+                document.getElementById('approve-transaction-id').textContent = transaction.id;
+                document.getElementById('approve-type').textContent = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                document.getElementById('approve-amount').textContent = `${transaction.type === 'withdrawal' ? '-' : '+'}$${parseFloat(transaction.amount).toFixed(2)}`;
+                document.getElementById('approve-user-name').textContent = transaction.user.fullname || transaction.user.username;
+                document.getElementById('approve-payment-method').textContent = transaction.payment_method || 'N/A';
+                document.getElementById('approve-user-balance').textContent = transaction.user.wallet ? `$${parseFloat(transaction.user.wallet.balance).toFixed(2)}` : 'N/A';
+                document.getElementById('approve-description').textContent = transaction.description || 'No description provided';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading transaction details:', error);
+        });
+}
+
+function populateRejectionModal() {
+    // Fetch transaction details if not already loaded
+    if (!currentTransactionId) return;
+
+    fetch(`/admin/transactions/${currentTransactionId}/details`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const transaction = data.transaction;
+                document.getElementById('reject-transaction-id').textContent = transaction.id;
+                document.getElementById('reject-type').textContent = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                document.getElementById('reject-amount').textContent = `${transaction.type === 'withdrawal' ? '-' : '+'}$${parseFloat(transaction.amount).toFixed(2)}`;
+                document.getElementById('reject-user-name').textContent = transaction.user.fullname || transaction.user.username;
+                document.getElementById('reject-payment-method').textContent = transaction.payment_method || 'N/A';
+                document.getElementById('reject-user-balance').textContent = transaction.user.wallet ? `$${parseFloat(transaction.user.wallet.balance).toFixed(2)}` : 'N/A';
+                document.getElementById('reject-description').textContent = transaction.description || 'No description provided';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading transaction details:', error);
+        });
 }
 
 function confirmApproval() {
