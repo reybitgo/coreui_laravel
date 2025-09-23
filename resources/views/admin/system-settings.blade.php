@@ -85,6 +85,101 @@
     <div class="col-lg-9">
         <!-- General Settings -->
         <div id="general-section" class="settings-section">
+            <div class="card">
+                <div class="card-header">
+                    <svg class="icon me-2">
+                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-settings') }}"></use>
+                    </svg>
+                    <strong>General Settings</strong>
+                    <small class="text-body-secondary ms-2">Override .env configuration</small>
+                </div>
+                <div class="card-body">
+                    <form>
+                        @csrf
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="app_name" class="form-label">Application Name</label>
+                                <input type="text" id="app_name" name="app_name" value="{{ isset($settings['app_name']) ? $settings['app_name']->value : config('app.name', 'E-Wallet System') }}" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="app_url" class="form-label">Application URL</label>
+                                <input type="url" id="app_url" name="app_url" value="{{ isset($settings['app_url']) ? $settings['app_url']->value : config('app.url', 'http://127.0.0.1:8000') }}" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="app_description" class="form-label">Application Description</label>
+                            <textarea id="app_description" name="app_description" rows="3" class="form-control">{{ isset($settings['app_description']) ? $settings['app_description']->value : 'Secure digital wallet platform for financial transactions' }}</textarea>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="timezone" class="form-label">System Timezone</label>
+                                <select id="timezone" name="timezone" class="form-select">
+                                    @php $currentTimezone = isset($settings['timezone']) ? $settings['timezone']->value : config('app.timezone', 'UTC'); @endphp
+                                    <option value="UTC" {{ $currentTimezone === 'UTC' ? 'selected' : '' }}>UTC</option>
+                                    <option value="Asia/Manila" {{ $currentTimezone === 'Asia/Manila' ? 'selected' : '' }}>Asia/Manila (Philippines)</option>
+                                    <option value="Asia/Singapore" {{ $currentTimezone === 'Asia/Singapore' ? 'selected' : '' }}>Asia/Singapore</option>
+                                    <option value="Asia/Tokyo" {{ $currentTimezone === 'Asia/Tokyo' ? 'selected' : '' }}>Asia/Tokyo</option>
+                                    <option value="America/New_York" {{ $currentTimezone === 'America/New_York' ? 'selected' : '' }}>Eastern Time</option>
+                                    <option value="America/Chicago" {{ $currentTimezone === 'America/Chicago' ? 'selected' : '' }}>Central Time</option>
+                                    <option value="America/Denver" {{ $currentTimezone === 'America/Denver' ? 'selected' : '' }}>Mountain Time</option>
+                                    <option value="America/Los_Angeles" {{ $currentTimezone === 'America/Los_Angeles' ? 'selected' : '' }}>Pacific Time</option>
+                                    <option value="Europe/London" {{ $currentTimezone === 'Europe/London' ? 'selected' : '' }}>Europe/London</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="language" class="form-label">Default Language</label>
+                                <select id="language" name="language" class="form-select">
+                                    @php $currentLanguage = isset($settings['language']) ? $settings['language']->value : config('app.locale', 'en'); @endphp
+                                    <option value="en" {{ $currentLanguage === 'en' ? 'selected' : '' }}>English</option>
+                                    <option value="es" {{ $currentLanguage === 'es' ? 'selected' : '' }}>Spanish</option>
+                                    <option value="fr" {{ $currentLanguage === 'fr' ? 'selected' : '' }}>French</option>
+                                    <option value="de" {{ $currentLanguage === 'de' ? 'selected' : '' }}>German</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="app_env" class="form-label">Application Environment</label>
+                                <select id="app_env" name="app_env" class="form-select">
+                                    @php $currentEnv = isset($settings['app_env']) ? $settings['app_env']->value : config('app.env', 'local'); @endphp
+                                    <option value="local" {{ $currentEnv === 'local' ? 'selected' : '' }}>Local (Development)</option>
+                                    <option value="staging" {{ $currentEnv === 'staging' ? 'selected' : '' }}>Staging</option>
+                                    <option value="production" {{ $currentEnv === 'production' ? 'selected' : '' }}>Production</option>
+                                </select>
+                                <div class="form-text">Environment affects debugging and error display</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="fallback_language" class="form-label">Fallback Language</label>
+                                <select id="fallback_language" name="fallback_language" class="form-select">
+                                    @php $currentFallback = isset($settings['fallback_language']) ? $settings['fallback_language']->value : config('app.fallback_locale', 'en'); @endphp
+                                    <option value="en" {{ $currentFallback === 'en' ? 'selected' : '' }}>English</option>
+                                    <option value="es" {{ $currentFallback === 'es' ? 'selected' : '' }}>Spanish</option>
+                                    <option value="fr" {{ $currentFallback === 'fr' ? 'selected' : '' }}>French</option>
+                                    <option value="de" {{ $currentFallback === 'de' ? 'selected' : '' }}>German</option>
+                                </select>
+                                <div class="form-text">Used when the default language is unavailable</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="app_debug" name="app_debug"
+                                       {{ isset($settings['app_debug']) ? ($settings['app_debug']->value ? 'checked' : '') : (config('app.debug') ? 'checked' : '') }}>
+                                <label class="form-check-label" for="app_debug">
+                                    <strong>Enable Debug Mode</strong>
+                                    <div class="text-body-secondary small">Shows detailed error messages and debugging information. Should be disabled in production.</div>
+                                </label>
+                            </div>
+                        </div>
+                        <button type="button" onclick="saveSettings('general')" class="btn btn-primary">
+                            <svg class="icon me-2">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-save') }}"></use>
+                            </svg>
+                            Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <div class="card mb-4">
                 <div class="card-header">
                     <svg class="icon me-2">
@@ -143,61 +238,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <svg class="icon me-2">
-                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-settings') }}"></use>
-                    </svg>
-                    <strong>General Settings</strong>
-                </div>
-                <div class="card-body">
-                    <form>
-                        @csrf
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label for="app_name" class="form-label">Application Name</label>
-                                <input type="text" id="app_name" name="app_name" value="E-Wallet System" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="app_url" class="form-label">Application URL</label>
-                                <input type="url" id="app_url" name="app_url" value="http://127.0.0.1:8000" class="form-control">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="app_description" class="form-label">Application Description</label>
-                            <textarea id="app_description" name="app_description" rows="3" class="form-control">Secure digital wallet platform for financial transactions</textarea>
-                        </div>
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label for="timezone" class="form-label">System Timezone</label>
-                                <select id="timezone" name="timezone" class="form-select">
-                                    <option value="UTC" selected>UTC</option>
-                                    <option value="America/New_York">Eastern Time</option>
-                                    <option value="America/Chicago">Central Time</option>
-                                    <option value="America/Denver">Mountain Time</option>
-                                    <option value="America/Los_Angeles">Pacific Time</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="language" class="form-label">Default Language</label>
-                                <select id="language" name="language" class="form-select">
-                                    <option value="en" selected>English</option>
-                                    <option value="es">Spanish</option>
-                                    <option value="fr">French</option>
-                                    <option value="de">German</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button type="button" onclick="saveSettings('general')" class="btn btn-primary">
-                            <svg class="icon me-2">
-                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-save') }}"></use>
-                            </svg>
-                            Save Changes
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>
@@ -825,6 +865,46 @@ function saveSettings(category) {
         .then(data => {
             if (data.success) {
                 showAlert('Payment methods settings updated successfully!', 'success');
+            } else {
+                showAlert('Error updating settings: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showAlert('Error updating settings. Please try again.', 'error');
+        });
+    } else if (category === 'general') {
+        // Get general settings values
+        const appName = document.getElementById('app_name').value;
+        const appUrl = document.getElementById('app_url').value;
+        const appDescription = document.getElementById('app_description').value;
+        const timezone = document.getElementById('timezone').value;
+        const language = document.getElementById('language').value;
+        const appEnv = document.getElementById('app_env').value;
+        const fallbackLanguage = document.getElementById('fallback_language').value;
+        const appDebug = document.getElementById('app_debug').checked;
+
+        // Send AJAX request to update general settings
+        fetch('{{ route("admin.system.settings.update") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                app_name: appName,
+                app_url: appUrl,
+                app_description: appDescription,
+                timezone: timezone,
+                language: language,
+                app_env: appEnv,
+                fallback_language: fallbackLanguage,
+                app_debug: appDebug
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('General settings updated successfully!', 'success');
             } else {
                 showAlert('Error updating settings: ' + data.message, 'error');
             }

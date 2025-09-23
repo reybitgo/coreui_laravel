@@ -920,6 +920,15 @@ class AdminController extends Controller
             'email_verification_enabled' => 'boolean',
             'require_2fa' => 'boolean',
             'maintenance_mode' => 'boolean',
+            // General settings validation
+            'app_name' => 'nullable|string|max:255',
+            'app_url' => 'nullable|url|max:255',
+            'app_description' => 'nullable|string|max:1000',
+            'timezone' => 'nullable|string|max:50',
+            'language' => 'nullable|string|max:10',
+            'app_env' => 'nullable|in:local,staging,production',
+            'fallback_language' => 'nullable|string|max:10',
+            'app_debug' => 'boolean',
             // Wallet limits validation
             'min_deposit' => 'numeric|min:0',
             'max_deposit' => 'numeric|min:0',
@@ -945,6 +954,32 @@ class AdminController extends Controller
             'cash_enabled' => 'boolean',
             'others_enabled' => 'boolean',
         ]);
+
+        // Update general settings
+        if ($request->has('app_name')) {
+            \App\Models\SystemSetting::set('app_name', $request->input('app_name', config('app.name')), 'string', 'Application name');
+        }
+        if ($request->has('app_url')) {
+            \App\Models\SystemSetting::set('app_url', $request->input('app_url', config('app.url')), 'string', 'Application URL');
+        }
+        if ($request->has('app_description')) {
+            \App\Models\SystemSetting::set('app_description', $request->input('app_description', 'Digital wallet platform'), 'string', 'Application description');
+        }
+        if ($request->has('timezone')) {
+            \App\Models\SystemSetting::set('timezone', $request->input('timezone', config('app.timezone')), 'string', 'System timezone');
+        }
+        if ($request->has('language')) {
+            \App\Models\SystemSetting::set('language', $request->input('language', config('app.locale')), 'string', 'Default language');
+        }
+        if ($request->has('app_env')) {
+            \App\Models\SystemSetting::set('app_env', $request->input('app_env', config('app.env')), 'string', 'Application environment');
+        }
+        if ($request->has('fallback_language')) {
+            \App\Models\SystemSetting::set('fallback_language', $request->input('fallback_language', config('app.fallback_locale')), 'string', 'Fallback language');
+        }
+        if ($request->has('app_debug')) {
+            \App\Models\SystemSetting::set('app_debug', $request->boolean('app_debug'), 'boolean', 'Enable debug mode');
+        }
 
         // Update security settings
         if ($request->has('email_verification_enabled')) {
