@@ -273,22 +273,23 @@
                                 </label>
                             </div>
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="session_timeout" name="session_timeout" checked>
+                                <input class="form-check-input" type="checkbox" id="session_timeout" name="session_timeout"
+                                    {{ isset($settings['session_timeout']) && $settings['session_timeout']->value ? 'checked' : 'checked' }}>
                                 <label class="form-check-label" for="session_timeout">
                                     <strong>Automatic Session Timeout</strong>
-                                    <div class="text-body-secondary small">Sessions expire after 120 minutes of inactivity</div>
+                                    <div class="text-body-secondary small">Sessions expire after configured time of inactivity</div>
                                 </label>
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label for="max_login_attempts" class="form-label">Max Login Attempts</label>
-                                <input type="number" id="max_login_attempts" name="max_login_attempts" value="3" min="1" max="10" class="form-control">
+                                <input type="number" id="max_login_attempts" name="max_login_attempts" value="{{ isset($settings['max_login_attempts']) ? $settings['max_login_attempts']->value : '3' }}" min="1" max="10" class="form-control">
                                 <div class="form-text">Account locked after this many failed attempts</div>
                             </div>
                             <div class="col-md-6">
                                 <label for="lockout_duration" class="form-label">Lockout Duration (minutes)</label>
-                                <input type="number" id="lockout_duration" name="lockout_duration" value="15" min="1" max="1440" class="form-control">
+                                <input type="number" id="lockout_duration" name="lockout_duration" value="{{ isset($settings['lockout_duration']) ? $settings['lockout_duration']->value : '15' }}" min="1" max="1440" class="form-control">
                                 <div class="form-text">How long accounts remain locked</div>
                             </div>
                         </div>
@@ -750,7 +751,9 @@ function saveSettings(category) {
         // Get security settings values
         const emailVerificationEnabled = document.getElementById('email_verification_enabled').checked;
         const require2fa = document.getElementById('require_2fa').checked;
-
+        const sessionTimeout = document.getElementById('session_timeout').checked;
+        const maxLoginAttempts = parseInt(document.getElementById('max_login_attempts').value) || 3;
+        const lockoutDuration = parseInt(document.getElementById('lockout_duration').value) || 15;
 
         // Send AJAX request to update settings
         fetch('{{ route("admin.system.settings.update") }}', {
@@ -762,7 +765,9 @@ function saveSettings(category) {
             body: JSON.stringify({
                 email_verification_enabled: emailVerificationEnabled,
                 require_2fa: require2fa,
-                maintenance_mode: false
+                session_timeout: sessionTimeout,
+                max_login_attempts: maxLoginAttempts,
+                lockout_duration: lockoutDuration
             })
         })
         .then(response => response.json())

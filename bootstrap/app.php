@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'ewallet.security' => \App\Http\Middleware\EWalletSecurityMiddleware::class,
             'conditional.verified' => \App\Http\Middleware\ConditionalEmailVerification::class,
+            'enforce.2fa' => \App\Http\Middleware\Enforce2FA::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

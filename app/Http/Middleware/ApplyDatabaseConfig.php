@@ -47,6 +47,10 @@ class ApplyDatabaseConfig
             'timezone' => 'app.timezone',
             'language' => 'app.locale',
             'fallback_language' => 'app.fallback_locale',
+            // Security settings
+            'session_timeout' => 'session.lifetime',
+            'max_login_attempts' => 'auth.max_attempts',
+            'lockout_duration' => 'auth.lockout_duration',
         ];
 
         foreach ($configMappings as $settingKey => $configKey) {

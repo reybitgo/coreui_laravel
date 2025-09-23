@@ -14,7 +14,7 @@ Route::get('/test-login', function () {
     return view('test-login');
 });
 
-Route::middleware(['auth', 'conditional.verified'])->group(function () {
+Route::middleware(['auth', 'conditional.verified', 'enforce.2fa'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profile Routes
@@ -24,7 +24,7 @@ Route::middleware(['auth', 'conditional.verified'])->group(function () {
 });
 
 // Admin Routes
-Route::middleware(['auth', 'conditional.verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'conditional.verified', 'enforce.2fa', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/wallet-management', [AdminController::class, 'walletManagement'])
         ->middleware('ewallet.security:wallet_management')
@@ -89,7 +89,7 @@ Route::middleware(['auth', 'conditional.verified', 'role:admin'])->prefix('admin
 });
 
 // Member/User Wallet Routes
-Route::middleware(['auth', 'conditional.verified'])->prefix('wallet')->name('wallet.')->group(function () {
+Route::middleware(['auth', 'conditional.verified', 'enforce.2fa'])->prefix('wallet')->name('wallet.')->group(function () {
     Route::get('/deposit', [WalletController::class, 'deposit'])
         ->middleware('ewallet.security:deposit_funds')
         ->name('deposit');

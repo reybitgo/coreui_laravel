@@ -920,6 +920,9 @@ class AdminController extends Controller
             'email_verification_enabled' => 'boolean',
             'require_2fa' => 'boolean',
             'maintenance_mode' => 'boolean',
+            'session_timeout' => 'boolean',
+            'max_login_attempts' => 'integer|min:1|max:10',
+            'lockout_duration' => 'integer|min:1|max:1440',
             // General settings validation
             'app_name' => 'nullable|string|max:255',
             'app_url' => 'nullable|url|max:255',
@@ -987,6 +990,15 @@ class AdminController extends Controller
         }
         if ($request->has('require_2fa')) {
             \App\Models\SystemSetting::set('require_2fa', $request->boolean('require_2fa'), 'boolean', 'Require two-factor authentication for all users');
+        }
+        if ($request->has('session_timeout')) {
+            \App\Models\SystemSetting::set('session_timeout', $request->boolean('session_timeout'), 'boolean', 'Enable automatic session timeout');
+        }
+        if ($request->has('max_login_attempts')) {
+            \App\Models\SystemSetting::set('max_login_attempts', $request->input('max_login_attempts', 3), 'integer', 'Maximum login attempts before lockout');
+        }
+        if ($request->has('lockout_duration')) {
+            \App\Models\SystemSetting::set('lockout_duration', $request->input('lockout_duration', 15), 'integer', 'Account lockout duration in minutes');
         }
         if ($request->has('maintenance_mode')) {
             \App\Models\SystemSetting::set('maintenance_mode', $request->boolean('maintenance_mode'), 'boolean', 'Enable maintenance mode');
