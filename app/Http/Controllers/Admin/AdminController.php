@@ -920,6 +920,11 @@ class AdminController extends Controller
             'email_verification_enabled' => 'boolean',
             'require_2fa' => 'boolean',
             'maintenance_mode' => 'boolean',
+            // Wallet limits validation
+            'min_deposit' => 'numeric|min:0',
+            'max_deposit' => 'numeric|min:0',
+            'min_withdrawal' => 'numeric|min:0',
+            'max_withdrawal' => 'numeric|min:0',
             'transfer_fee_enabled' => 'boolean',
             'transfer_fee_type' => 'in:percentage,fixed',
             'transfer_fee_value' => 'numeric|min:0',
@@ -950,6 +955,20 @@ class AdminController extends Controller
         }
         if ($request->has('maintenance_mode')) {
             \App\Models\SystemSetting::set('maintenance_mode', $request->boolean('maintenance_mode'), 'boolean', 'Enable maintenance mode');
+        }
+
+        // Update wallet limits settings
+        if ($request->has('min_deposit')) {
+            \App\Models\SystemSetting::set('min_deposit', $request->input('min_deposit', 1.00), 'string', 'Minimum deposit amount');
+        }
+        if ($request->has('max_deposit')) {
+            \App\Models\SystemSetting::set('max_deposit', $request->input('max_deposit', 10000.00), 'string', 'Maximum deposit amount');
+        }
+        if ($request->has('min_withdrawal')) {
+            \App\Models\SystemSetting::set('min_withdrawal', $request->input('min_withdrawal', 1.00), 'string', 'Minimum withdrawal amount');
+        }
+        if ($request->has('max_withdrawal')) {
+            \App\Models\SystemSetting::set('max_withdrawal', $request->input('max_withdrawal', 10000.00), 'string', 'Maximum withdrawal amount');
         }
 
         // Update transfer fee settings (mapping to existing backend settings)

@@ -278,21 +278,21 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label for="min_deposit" class="form-label">Minimum Deposit Amount ($)</label>
-                                <input type="number" id="min_deposit" name="min_deposit" value="1.00" min="0" step="0.01" class="form-control">
+                                <input type="number" id="min_deposit" name="min_deposit" value="{{ isset($settings['min_deposit']) ? $settings['min_deposit']->value : '1.00' }}" min="0" step="0.01" class="form-control">
                             </div>
                             <div class="col-md-6">
                                 <label for="max_deposit" class="form-label">Maximum Deposit Amount ($)</label>
-                                <input type="number" id="max_deposit" name="max_deposit" value="10000.00" min="1" step="0.01" class="form-control">
+                                <input type="number" id="max_deposit" name="max_deposit" value="{{ isset($settings['max_deposit']) ? $settings['max_deposit']->value : '10000.00' }}" min="1" step="0.01" class="form-control">
                             </div>
                         </div>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label for="min_withdrawal" class="form-label">Minimum Withdrawal Amount ($)</label>
-                                <input type="number" id="min_withdrawal" name="min_withdrawal" value="1.00" min="0" step="0.01" class="form-control">
+                                <input type="number" id="min_withdrawal" name="min_withdrawal" value="{{ isset($settings['min_withdrawal']) ? $settings['min_withdrawal']->value : '1.00' }}" min="0" step="0.01" class="form-control">
                             </div>
                             <div class="col-md-6">
                                 <label for="max_withdrawal" class="form-label">Maximum Withdrawal Amount ($)</label>
-                                <input type="number" id="max_withdrawal" name="max_withdrawal" value="10000.00" min="1" step="0.01" class="form-control">
+                                <input type="number" id="max_withdrawal" name="max_withdrawal" value="{{ isset($settings['max_withdrawal']) ? $settings['max_withdrawal']->value : '10000.00' }}" min="1" step="0.01" class="form-control">
                             </div>
                         </div>
 
@@ -308,7 +308,7 @@
                             </label>
                         </div>
 
-                        <div id="withdrawal_fee_config" class="card border-warning mb-3" style="display: none;">
+                        <div id="withdrawal_fee_config" class="card border-warning mb-3" style="display: {{ isset($settings['withdrawal_fee_enabled']) && $settings['withdrawal_fee_enabled']->value ? 'block' : 'none' }};">
                             <div class="card-header bg-warning-subtle">
                                 <h6 class="mb-0">Withdrawal Fee Configuration</h6>
                             </div>
@@ -317,14 +317,14 @@
                                     <div class="col-md-6">
                                         <label for="withdrawal_fee_type" class="form-label">Fee Type</label>
                                         <select class="form-select" id="withdrawal_fee_type" name="withdrawal_fee_type">
-                                            <option value="fixed">Fixed Amount</option>
-                                            <option value="percentage">Percentage</option>
+                                            <option value="fixed" {{ isset($settings['withdrawal_fee_type']) && $settings['withdrawal_fee_type']->value === 'fixed' ? 'selected' : '' }}>Fixed Amount</option>
+                                            <option value="percentage" {{ !isset($settings['withdrawal_fee_type']) || $settings['withdrawal_fee_type']->value === 'percentage' ? 'selected' : '' }}>Percentage</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="withdrawal_fee_value" class="form-label">Fee Value</label>
                                         <input type="number" class="form-control" id="withdrawal_fee_value" name="withdrawal_fee_value"
-                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                               value="{{ isset($settings['withdrawal_fee_value']) ? $settings['withdrawal_fee_value']->value : '0' }}" min="0" step="0.01" placeholder="0.00">
                                         <div class="form-text">For fixed: amount in $, for percentage: % (e.g., 2.5 for 2.5%)</div>
                                     </div>
                                 </div>
@@ -332,12 +332,12 @@
                                     <div class="col-md-6">
                                         <label for="withdrawal_minimum_fee" class="form-label">Minimum Fee ($)</label>
                                         <input type="number" class="form-control" id="withdrawal_minimum_fee" name="withdrawal_minimum_fee"
-                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                               value="{{ isset($settings['withdrawal_minimum_fee']) ? $settings['withdrawal_minimum_fee']->value : '0' }}" min="0" step="0.01" placeholder="0.00">
                                     </div>
                                     <div class="col-md-6">
                                         <label for="withdrawal_maximum_fee" class="form-label">Maximum Fee ($)</label>
                                         <input type="number" class="form-control" id="withdrawal_maximum_fee" name="withdrawal_maximum_fee"
-                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                               value="{{ isset($settings['withdrawal_maximum_fee']) ? $settings['withdrawal_maximum_fee']->value : '0' }}" min="0" step="0.01" placeholder="0.00">
                                         <div class="form-text">0 means no limit</div>
                                     </div>
                                 </div>
@@ -353,7 +353,7 @@
                             </label>
                         </div>
 
-                        <div id="transfer_fee_config" class="card border-info mb-3" style="display: none;">
+                        <div id="transfer_fee_config" class="card border-info mb-3" style="display: {{ isset($settings['transfer_charge_enabled']) && $settings['transfer_charge_enabled']->value ? 'block' : 'none' }};">
                             <div class="card-header bg-info-subtle">
                                 <h6 class="mb-0">Transfer Fee Configuration</h6>
                             </div>
@@ -362,14 +362,14 @@
                                     <div class="col-md-6">
                                         <label for="transfer_fee_type" class="form-label">Fee Type</label>
                                         <select class="form-select" id="transfer_fee_type" name="transfer_fee_type">
-                                            <option value="fixed">Fixed Amount</option>
-                                            <option value="percentage">Percentage</option>
+                                            <option value="fixed" {{ isset($settings['transfer_charge_type']) && $settings['transfer_charge_type']->value === 'fixed' ? 'selected' : '' }}>Fixed Amount</option>
+                                            <option value="percentage" {{ !isset($settings['transfer_charge_type']) || $settings['transfer_charge_type']->value === 'percentage' ? 'selected' : '' }}>Percentage</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="transfer_fee_value" class="form-label">Fee Value</label>
                                         <input type="number" class="form-control" id="transfer_fee_value" name="transfer_fee_value"
-                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                               value="{{ isset($settings['transfer_charge_value']) ? $settings['transfer_charge_value']->value : '0' }}" min="0" step="0.01" placeholder="0.00">
                                         <div class="form-text">For fixed: amount in $, for percentage: % (e.g., 1.5 for 1.5%)</div>
                                     </div>
                                 </div>
@@ -377,12 +377,12 @@
                                     <div class="col-md-6">
                                         <label for="transfer_minimum_fee" class="form-label">Minimum Fee ($)</label>
                                         <input type="number" class="form-control" id="transfer_minimum_fee" name="transfer_minimum_fee"
-                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                               value="{{ isset($settings['transfer_minimum_charge']) ? $settings['transfer_minimum_charge']->value : '0' }}" min="0" step="0.01" placeholder="0.00">
                                     </div>
                                     <div class="col-md-6">
                                         <label for="transfer_maximum_fee" class="form-label">Maximum Fee ($)</label>
                                         <input type="number" class="form-control" id="transfer_maximum_fee" name="transfer_maximum_fee"
-                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                               value="{{ isset($settings['transfer_maximum_charge']) ? $settings['transfer_maximum_charge']->value : '0' }}" min="0" step="0.01" placeholder="0.00">
                                         <div class="form-text">0 means no limit</div>
                                     </div>
                                 </div>
@@ -737,6 +737,12 @@ function saveSettings(category) {
             showAlert('Error updating settings. Please try again.', 'error');
         });
     } else if (category === 'wallet') {
+        // Get wallet limits values
+        const minDeposit = parseFloat(document.getElementById('min_deposit').value) || 0;
+        const maxDeposit = parseFloat(document.getElementById('max_deposit').value) || 0;
+        const minWithdrawal = parseFloat(document.getElementById('min_withdrawal').value) || 0;
+        const maxWithdrawal = parseFloat(document.getElementById('max_withdrawal').value) || 0;
+
         // Get withdrawal fee settings values
         const withdrawalFeeEnabled = document.getElementById('withdrawal_fee_enabled').checked;
         const withdrawalFeeType = document.getElementById('withdrawal_fee_type').value;
@@ -759,6 +765,10 @@ function saveSettings(category) {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             body: JSON.stringify({
+                min_deposit: minDeposit,
+                max_deposit: maxDeposit,
+                min_withdrawal: minWithdrawal,
+                max_withdrawal: maxWithdrawal,
                 withdrawal_fee_enabled: withdrawalFeeEnabled,
                 withdrawal_fee_type: withdrawalFeeType,
                 withdrawal_fee_value: withdrawalFeeValue,
