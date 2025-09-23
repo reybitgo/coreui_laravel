@@ -115,12 +115,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Initializing CoreUI theme system...');
 
-            // Get stored theme or default to light
-            const storedTheme = localStorage.getItem('coreui-theme') || 'light';
-            console.log('Stored theme:', storedTheme);
+            // Force light mode only
+            const storedTheme = 'light';
+            console.log('Forced theme to light mode');
 
-            // Set initial theme
-            document.documentElement.setAttribute('data-coreui-theme', storedTheme);
+            // Set initial theme to light
+            document.documentElement.setAttribute('data-coreui-theme', 'light');
 
             // Initialize theme switcher buttons
             const themeButtons = document.querySelectorAll('[data-coreui-theme-value]');
@@ -184,8 +184,8 @@
                 }
             }
 
-            // Initialize logos for current theme
-            updateLogosForTheme(storedTheme);
+            // Initialize logos for light theme only
+            updateLogosForTheme('light');
 
             // Listen for system theme changes when in auto mode
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {

@@ -19,91 +19,20 @@
             @endif
         </ul>
         <ul class="header-nav ms-auto">
-            <!-- Theme Switcher -->
+            <!-- Username Display -->
             <li class="nav-item">
-                <div class="dropdown">
-                    <button class="btn btn-link nav-link" type="button" aria-expanded="false" data-coreui-toggle="dropdown">
-                        <svg class="icon icon-lg theme-icon-active">
-                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-contrast') }}"></use>
-                        </svg>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" style="--cui-dropdown-min-width: 8rem">
-                        <li>
-                            <button class="dropdown-item d-flex align-items-center" type="button" data-coreui-theme-value="light">
-                                <svg class="icon icon-lg me-3">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-sun') }}"></use>
-                                </svg>
-                                <span>Light</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="dropdown-item d-flex align-items-center" type="button" data-coreui-theme-value="dark">
-                                <svg class="icon icon-lg me-3">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-moon') }}"></use>
-                                </svg>
-                                <span>Dark</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="dropdown-item d-flex align-items-center" type="button" data-coreui-theme-value="auto">
-                                <svg class="icon icon-lg me-3">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-contrast') }}"></use>
-                                </svg>
-                                <span>Auto</span>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            <li class="nav-item py-1">
-                <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
-            </li>
-            <!-- Notifications -->
-            <li class="nav-item dropdown">
-                <button class="btn btn-link nav-link py-2 pe-2" type="button" aria-expanded="false" data-coreui-toggle="dropdown">
-                    <svg class="icon icon-lg">
-                        <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-bell') }}"></use>
-                    </svg>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end pt-0 w-auto">
-                    <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">
-                        E-Wallet Notifications
-                    </div>
-                    @if(auth()->user()->hasRole('admin'))
-                        @php
-                            $pendingTransactionsCount = \App\Models\Transaction::where('status', 'pending')->count();
-                        @endphp
-                        @if($pendingTransactionsCount > 0)
-                            <a class="dropdown-item" href="{{ route('admin.transaction.approval') }}">
-                                <svg class="icon me-2 text-warning">
-                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-warning') }}"></use>
-                                </svg>
-                                {{ $pendingTransactionsCount }} pending transaction(s)
-                            </a>
-                        @endif
-                    @endif
-                    <!-- Wallet Balance Display -->
-                    @if(auth()->user()->wallet)
-                        <a class="dropdown-item" href="#">
-                            <svg class="icon me-2 text-success">
-                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wallet') }}"></use>
-                            </svg>
-                            Balance: ${{ number_format(auth()->user()->wallet->balance, 2) }}
-                        </a>
-                    @endif
-                    @if(!isset($pendingTransactionsCount) || $pendingTransactionsCount == 0)
-                        <div class="dropdown-item text-center border-top">
-                            <strong>No new notifications</strong>
-                        </div>
-                    @endif
-                </div>
+                <span class="nav-link px-2 text-body-secondary">
+                    Welcome, <strong>{{ auth()->user()->username }}</strong>
+                </span>
             </li>
             <!-- User Profile -->
             <li class="nav-item dropdown">
                 <a class="nav-link py-0 pe-0" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                    <div class="avatar avatar-md">
-                        <div class="avatar-img bg-primary text-white d-flex align-items-center justify-content-center">
-                            {{ strtoupper(substr(auth()->user()->username, 0, 2)) }}
+                    <div class="avatar rounded-circle" style="width: 32px; height: 32px;">
+                        <div class="avatar-img bg-primary text-white d-flex align-items-center justify-content-center rounded-circle" style="width: 32px; height: 32px;">
+                            <svg class="icon" style="width: 18px; height: 18px;">
+                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-user') }}"></use>
+                            </svg>
                         </div>
                     </div>
                 </a>
