@@ -86,6 +86,9 @@ Route::middleware(['auth', 'conditional.verified', 'enforce.2fa', 'role:admin'])
     Route::post('/system-settings', [AdminController::class, 'updateSystemSettings'])
         ->middleware('ewallet.security:system_settings')
         ->name('system.settings.update');
+    Route::post('/system-settings/test-notification', [AdminController::class, 'testNotification'])
+        ->middleware('ewallet.security:system_settings')
+        ->name('system.settings.test-notification');
 });
 
 // Member/User Wallet Routes

@@ -21,7 +21,11 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bind custom registration response
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\RegisterResponse::class,
+            \App\Http\Responses\RegisterResponse::class
+        );
     }
 
     /**

@@ -464,37 +464,55 @@
                         @csrf
                         <h6 class="mb-3">Email Notifications</h6>
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="notify_new_user" name="notify_new_user" checked>
+                            <input class="form-check-input" type="checkbox" id="notify_new_user" name="notify_new_user"
+                                {{ isset($settings['notify_new_user']) && $settings['notify_new_user']->value ? 'checked' : 'checked' }}>
                             <label class="form-check-label" for="notify_new_user">
                                 <strong>New User Registration</strong>
                                 <div class="text-body-secondary small">Notify admins when new users register</div>
                             </label>
                         </div>
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="notify_large_transaction" name="notify_large_transaction" checked>
+                            <input class="form-check-input" type="checkbox" id="notify_large_transaction" name="notify_large_transaction"
+                                {{ isset($settings['notify_large_transaction']) && $settings['notify_large_transaction']->value ? 'checked' : 'checked' }}>
                             <label class="form-check-label" for="notify_large_transaction">
                                 <strong>Large Transactions</strong>
                                 <div class="text-body-secondary small">Notify admins of transactions over the review threshold</div>
                             </label>
                         </div>
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="notify_suspicious" name="notify_suspicious" checked>
+                            <input class="form-check-input" type="checkbox" id="notify_suspicious" name="notify_suspicious"
+                                {{ isset($settings['notify_suspicious']) && $settings['notify_suspicious']->value ? 'checked' : 'checked' }}>
                             <label class="form-check-label" for="notify_suspicious">
                                 <strong>Suspicious Activity</strong>
                                 <div class="text-body-secondary small">Immediate alerts for flagged transactions</div>
                             </label>
                         </div>
-                        <div class="mb-3">
-                            <label for="admin_email" class="form-label">Admin Email Address</label>
-                            <input type="email" id="admin_email" name="admin_email" value="admin@example.com" class="form-control">
-                            <div class="form-text">Primary email for system notifications</div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="admin_email" class="form-label">Admin Email Address</label>
+                                <input type="email" id="admin_email" name="admin_email" value="{{ isset($settings['admin_email']) ? $settings['admin_email']->value : 'admin@example.com' }}" class="form-control">
+                                <div class="form-text">Primary email for system notifications</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="transaction_review_threshold" class="form-label">Large Transaction Threshold ($)</label>
+                                <input type="number" id="transaction_review_threshold" name="transaction_review_threshold" value="{{ isset($settings['transaction_review_threshold']) ? $settings['transaction_review_threshold']->value : '1000' }}" min="0" step="0.01" class="form-control">
+                                <div class="form-text">Amount above which transactions trigger notifications</div>
+                            </div>
                         </div>
-                        <button type="button" onclick="saveSettings('notifications')" class="btn btn-primary">
-                            <svg class="icon me-2">
-                                <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-save') }}"></use>
-                            </svg>
-                            Save Notification Settings
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button type="button" onclick="saveSettings('notifications')" class="btn btn-primary">
+                                <svg class="icon me-2">
+                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-save') }}"></use>
+                                </svg>
+                                Save Notification Settings
+                            </button>
+                            <button type="button" onclick="testNotifications()" class="btn btn-outline-secondary">
+                                <svg class="icon me-2">
+                                    <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-send') }}"></use>
+                                </svg>
+                                Send Test Email
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -917,6 +935,40 @@ function saveSettings(category) {
         .catch(error => {
             showAlert('Error updating settings. Please try again.', 'error');
         });
+    } else if (category === 'notifications') {
+        // Get notification settings values
+        const notifyNewUser = document.getElementById('notify_new_user').checked;
+        const notifyLargeTransaction = document.getElementById('notify_large_transaction').checked;
+        const notifySuspicious = document.getElementById('notify_suspicious').checked;
+        const adminEmail = document.getElementById('admin_email').value;
+        const transactionReviewThreshold = parseFloat(document.getElementById('transaction_review_threshold').value) || 1000;
+
+        // Send AJAX request to update notification settings
+        fetch('{{ route("admin.system.settings.update") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                notify_new_user: notifyNewUser,
+                notify_large_transaction: notifyLargeTransaction,
+                notify_suspicious: notifySuspicious,
+                admin_email: adminEmail,
+                transaction_review_threshold: transactionReviewThreshold
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Notification settings updated successfully!', 'success');
+            } else {
+                showAlert('Error updating settings: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showAlert('Error updating settings. Please try again.', 'error');
+        });
     } else {
         // Simulate saving other categories
         showAlert(`${category.charAt(0).toUpperCase() + category.slice(1)} settings saved successfully!`, 'success');
@@ -944,6 +996,29 @@ function resetSystem() {
         if (confirm('This will reset ALL settings to default values. Are you absolutely sure?')) {
             showAlert('System settings have been reset to defaults.', 'success');
         }
+    }
+}
+
+function testNotifications() {
+    if (confirm('This will send a test email to the configured admin email address. Continue?')) {
+        fetch('{{ route("admin.system.settings.test-notification") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Test notification sent successfully! Check your email.', 'success');
+            } else {
+                showAlert('Failed to send test notification: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showAlert('Error sending test notification. Please try again.', 'error');
+        });
     }
 }
 

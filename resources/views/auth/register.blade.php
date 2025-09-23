@@ -35,12 +35,12 @@
                                         <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-user') }}"></use>
                                     </svg>
                                 </span>
-                                <input class="form-control @error('name') is-invalid @enderror"
+                                <input class="form-control @error('fullname') is-invalid @enderror"
                                        type="text"
-                                       name="name"
-                                       id="name"
+                                       name="fullname"
+                                       id="fullname"
                                        placeholder="Full Name"
-                                       value="{{ old('name') }}"
+                                       value="{{ old('fullname') }}"
                                        autocomplete="name"
                                        required>
                             </div>

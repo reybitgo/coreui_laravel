@@ -923,6 +923,12 @@ class AdminController extends Controller
             'session_timeout' => 'boolean',
             'max_login_attempts' => 'integer|min:1|max:10',
             'lockout_duration' => 'integer|min:1|max:1440',
+            // Notification settings validation
+            'notify_new_user' => 'boolean',
+            'notify_large_transaction' => 'boolean',
+            'notify_suspicious' => 'boolean',
+            'admin_email' => 'nullable|email|max:255',
+            'transaction_review_threshold' => 'numeric|min:0',
             // General settings validation
             'app_name' => 'nullable|string|max:255',
             'app_url' => 'nullable|url|max:255',
@@ -1004,6 +1010,23 @@ class AdminController extends Controller
             \App\Models\SystemSetting::set('maintenance_mode', $request->boolean('maintenance_mode'), 'boolean', 'Enable maintenance mode');
         }
 
+        // Update notification settings
+        if ($request->has('notify_new_user')) {
+            \App\Models\SystemSetting::set('notify_new_user', $request->boolean('notify_new_user'), 'boolean', 'Notify admins of new user registrations');
+        }
+        if ($request->has('notify_large_transaction')) {
+            \App\Models\SystemSetting::set('notify_large_transaction', $request->boolean('notify_large_transaction'), 'boolean', 'Notify admins of large transactions');
+        }
+        if ($request->has('notify_suspicious')) {
+            \App\Models\SystemSetting::set('notify_suspicious', $request->boolean('notify_suspicious'), 'boolean', 'Notify admins of suspicious activity');
+        }
+        if ($request->has('admin_email')) {
+            \App\Models\SystemSetting::set('admin_email', $request->input('admin_email', 'admin@example.com'), 'string', 'Primary admin email for notifications');
+        }
+        if ($request->has('transaction_review_threshold')) {
+            \App\Models\SystemSetting::set('transaction_review_threshold', $request->input('transaction_review_threshold', 1000), 'string', 'Transaction amount threshold for admin notifications');
+        }
+
         // Update wallet limits settings
         if ($request->has('min_deposit')) {
             \App\Models\SystemSetting::set('min_deposit', $request->input('min_deposit', 1.00), 'string', 'Minimum deposit amount');
@@ -1066,6 +1089,26 @@ class AdminController extends Controller
             'success' => true,
             'message' => 'System settings updated successfully.'
         ]);
+    }
+
+    /**
+     * Test notification system
+     */
+    public function testNotification(Request $request)
+    {
+        $this->authorize('system_settings');
+
+        try {
+            $success = \App\Services\NotificationService::testNotification();
+
+            if ($success) {
+                return response()->json(['success' => true, 'message' => 'Test notification sent successfully']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Failed to send test notification']);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
     }
 
     public function getTransactionStats()
