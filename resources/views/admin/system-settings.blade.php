@@ -72,7 +72,7 @@
                     </a>
                     <a href="#maintenance" onclick="showSection('maintenance')" class="settings-nav-item list-group-item list-group-item-action">
                         <svg class="icon me-3">
-                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-wrench') }}"></use>
+                            <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-warning') }}"></use>
                         </svg>
                         Maintenance
                     </a>
@@ -180,7 +180,7 @@
                 </div>
             </div>
 
-            <div class="card mb-4">
+            <div class="card mb-4 mt-4">
                 <div class="card-header">
                     <svg class="icon me-2">
                         <use xlink:href="{{ asset('coreui-template/vendors/@coreui/icons/svg/free.svg#cil-info') }}"></use>
