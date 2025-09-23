@@ -308,6 +308,42 @@
                             </label>
                         </div>
 
+                        <div id="withdrawal_fee_config" class="card border-warning mb-3" style="display: none;">
+                            <div class="card-header bg-warning-subtle">
+                                <h6 class="mb-0">Withdrawal Fee Configuration</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="withdrawal_fee_type" class="form-label">Fee Type</label>
+                                        <select class="form-select" id="withdrawal_fee_type" name="withdrawal_fee_type">
+                                            <option value="fixed">Fixed Amount</option>
+                                            <option value="percentage">Percentage</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="withdrawal_fee_value" class="form-label">Fee Value</label>
+                                        <input type="number" class="form-control" id="withdrawal_fee_value" name="withdrawal_fee_value"
+                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                        <div class="form-text">For fixed: amount in $, for percentage: % (e.g., 2.5 for 2.5%)</div>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="withdrawal_minimum_fee" class="form-label">Minimum Fee ($)</label>
+                                        <input type="number" class="form-control" id="withdrawal_minimum_fee" name="withdrawal_minimum_fee"
+                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="withdrawal_maximum_fee" class="form-label">Maximum Fee ($)</label>
+                                        <input type="number" class="form-control" id="withdrawal_maximum_fee" name="withdrawal_maximum_fee"
+                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                        <div class="form-text">0 means no limit</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="transfer_fee_enabled" name="transfer_fee_enabled"
                                 {{ isset($settings['transfer_charge_enabled']) && $settings['transfer_charge_enabled']->value ? 'checked' : '' }}>
@@ -315,6 +351,42 @@
                                 <strong>Enable Transfer Fees</strong>
                                 <div class="text-body-secondary small">Charge fees for fund transfers between users</div>
                             </label>
+                        </div>
+
+                        <div id="transfer_fee_config" class="card border-info mb-3" style="display: none;">
+                            <div class="card-header bg-info-subtle">
+                                <h6 class="mb-0">Transfer Fee Configuration</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="transfer_fee_type" class="form-label">Fee Type</label>
+                                        <select class="form-select" id="transfer_fee_type" name="transfer_fee_type">
+                                            <option value="fixed">Fixed Amount</option>
+                                            <option value="percentage">Percentage</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="transfer_fee_value" class="form-label">Fee Value</label>
+                                        <input type="number" class="form-control" id="transfer_fee_value" name="transfer_fee_value"
+                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                        <div class="form-text">For fixed: amount in $, for percentage: % (e.g., 1.5 for 1.5%)</div>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="transfer_minimum_fee" class="form-label">Minimum Fee ($)</label>
+                                        <input type="number" class="form-control" id="transfer_minimum_fee" name="transfer_minimum_fee"
+                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="transfer_maximum_fee" class="form-label">Maximum Fee ($)</label>
+                                        <input type="number" class="form-control" id="transfer_maximum_fee" name="transfer_maximum_fee"
+                                               value="0" min="0" step="0.01" placeholder="0.00">
+                                        <div class="form-text">0 means no limit</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="alert alert-info">
@@ -588,6 +660,34 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize fee configuration visibility
+    const withdrawalFeeCheckbox = document.getElementById('withdrawal_fee_enabled');
+    const transferFeeCheckbox = document.getElementById('transfer_fee_enabled');
+    const withdrawalFeeConfig = document.getElementById('withdrawal_fee_config');
+    const transferFeeConfig = document.getElementById('transfer_fee_config');
+
+    // Show/hide withdrawal fee configuration
+    if (withdrawalFeeCheckbox && withdrawalFeeConfig) {
+        // Set initial state
+        withdrawalFeeConfig.style.display = withdrawalFeeCheckbox.checked ? 'block' : 'none';
+
+        withdrawalFeeCheckbox.addEventListener('change', function() {
+            withdrawalFeeConfig.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+
+    // Show/hide transfer fee configuration
+    if (transferFeeCheckbox && transferFeeConfig) {
+        // Set initial state
+        transferFeeConfig.style.display = transferFeeCheckbox.checked ? 'block' : 'none';
+
+        transferFeeCheckbox.addEventListener('change', function() {
+            transferFeeConfig.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+});
+
 function showSection(sectionName) {
     // Hide all sections
     document.querySelectorAll('.settings-section').forEach(section => {
